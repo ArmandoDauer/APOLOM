@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Etapa 1 - Decision Variables</title>
+  <style>
+    body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .flow-image {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 30px;
+    }
+
+    .purposes {
+      text-align: justify;
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      background-color: #ffffffaa;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .selection {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    select {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      background-color: #f9f9f9;
+      width: 100%;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .next-button,
+    .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    .next-button:hover,
+    .back-button:hover {
+      background-color: #90c7e6;
+    }
+
+    @media (max-width: 768px) {
+      .purposes {
+        font-size: 14px;
+        padding: 15px;
+      }
+
+      select {
+        font-size: 14px;
+        padding: 8px;
+      }
+
+      .buttons {
+        flex-direction: column;
+      }
+
+      .next-button,
+      .back-button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Fluxogram as Image -->
+    <img src="Directive_Variables.png" alt="Start Flow" class="flow-image">
+
+    <!-- Purposes Text -->
+    <div class="purposes">
+      <h2>Directive Variables</h2>
+      <p style="font-size: 16px;">
+        The Directive Variables assist the user in determining the primary objectives of the system. These variables will guide the entire development of the DRT, influencing decision-making and reflecting whether the selected characteristics align with the previously defined objectives.
+  Subsequently, the user will be presented with the possible values for three decision variables: purpose, target passengers, and service hours.
+  In the fourth decision variable, service area, the user specifies the geographical area in which the DRT will operate.
+      </p>
+    </div>
+
+    <!-- Buttons -->
+    <div class="buttons">
+      <button class="next-button" onclick="window.location.href='index.html'">BACK</button>
+      <button class="next-button" onclick="window.location.href='2_purposes_selection.html'">NEXT</button>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Etapa 1 - Decision Variables</title>
+  <style>
+    body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .flow-image {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 30px;
+    }
+
+    .purposes {
+      text-align: justify;
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      background-color: #ffffffaa;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .selection {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    select {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      background-color: #f9f9f9;
+      width: 100%;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .next-button,
+    .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    .next-button:hover,
+    .back-button:hover {
+      background-color: #90c7e6;
+    }
+
+    @media (max-width: 768px) {
+      .purposes {
+        font-size: 14px;
+        padding: 15px;
+      }
+
+      select {
+        font-size: 14px;
+        padding: 8px;
+      }
+
+      .buttons {
+        flex-direction: column;
+      }
+
+      .next-button,
+      .back-button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Fluxogram as Image -->
+    <img src="Directive_Variables.png" alt="Directive Variables Flow" class="flow-image">
+
+    <!-- Purposes Text -->
+    <div class="purposes">
+      <h2>Service Hours</h2>
+      <p>
+        Service hours define the specific timeframe during which the DRT service will be operational. This element plays a critical role in ensuring that the service aligns with its intended purpose and the motivations behind its implementation. For instance, service hours may be tailored to address particular needs, such as peak travel periods, commuter schedules, or improved accessibility for underserved populations. The strategic definition of these hours can significantly influence the system’s efficiency and its ability to meet the expectations of the target audience.
+      </p>
+      <p>
+        In scenarios where resources are limited—such as constrained fleet size or insufficient funding—service hours can also be used as a mechanism to optimize operational capacity. For example, rather than providing continuous coverage across the entire service area, the system might operate on a segmented schedule. This approach allows specific zones or neighborhoods to be served during different time windows, ensuring that the entire region is covered throughout the day. Such a strategy can help balance resource constraints with the goal of equitable access, particularly in cases where demand varies by time or location.
+      </p>
+      <p>
+        Below are the main service hour configurations identified through the analysis of real-world cases:
+      </p>
+      <ul>
+        <li><u>Conventional Transport Business Hours:</u> The DRT operates during the same hours as a conventional public transport system. Typically, DRTs following this model aim to complement the existing system by serving areas or passengers that are not efficiently covered, or by improving access to the existing network.</li>
+
+        <li><u>Off-Peak Hours Only:</u> In this case, the DRT operates exclusively during off-peak hours, when demand is lower and often insufficient to justify traditional fixed-route services. These DRTs may supplement the existing system or replace it during these lower-demand periods.</li>
+
+        <li><u>Peak Hours Only:</u> DRTs operating solely during peak hours can help alleviate excess demand that the regular system cannot manage, by increasing vehicle availability or enhancing access to high-capacity transport modes. In standalone operations, peak hours may be the only feasible period due to concentrated demand.</li>
+
+        <li><u>Specific Time Windows:</u> The system operates during defined time periods, which may or may not be regular. These timeframes are determined based on factors such as user demand, resource availability, and the presence of other transport options.</li>
+
+        <li><u>Night Services:</u> During nighttime, demand tends to be very low. As a result, conventional transport services often reduce frequency or even suspend operations. In such cases, DRT can provide a viable alternative for maintaining essential mobility services during these hours.</li>
+      </ul>
+    </div>
+
+    <!-- Selection Section -->
+    <div class="selection">
+      <p>Select the service hours of the system. Only one type of service hour can be selected</p>
+      <label for="Service_Hour_1">Service Hour</label>
+      <select id="Service_Hour_1">
+        <option value="">-- Select a service hour --</option>
+        <option value="conventional_business_hour">Conventional Transport Business Hours</option>
+        <option value="off_peak_only">Off-peak hours only</option>
+        <option value="peak_hours_only">Peak hours only</option>
+        <option value="specific_time_window">Specific time window</option>
+        <option value="night_services">Night Services</option>
+      </select>
+
+
+    <!-- Buttons -->
+    <div class="buttons">
+      <button class="back-button" onclick="window.location.href='3_target_passengers.html'">BACK</button>
+      <button class="next-button" onclick="saveSelections()">NEXT</button>
+    </div>
+  </div>
+
+<script>
+  function saveSelections() {
+    const Service_Hour_1 = document.getElementById('Service_Hour_1').value;
+
+    if (Service_Hour_1) {
+      localStorage.setItem('Service_Hour_1', Service_Hour_1);
+      window.location.href = '5_service_area.html';
+    } else {
+      alert("Select a service hour.");
+    }
+  }
+</script>
+</body>
+</html>

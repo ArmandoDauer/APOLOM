@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Etapa 1 - Decision Variables</title>
+  <style>
+    body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .flow-image {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 30px;
+    }
+
+    .purposes {
+      text-align: justify;
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      background-color: #ffffffaa;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .selection {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    select {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      background-color: #f9f9f9;
+      width: 100%;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .next-button,
+    .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    .next-button:hover,
+    .back-button:hover {
+      background-color: #90c7e6;
+    }
+
+    @media (max-width: 768px) {
+      .purposes {
+        font-size: 14px;
+        padding: 15px;
+      }
+
+      select {
+        font-size: 14px;
+        padding: 8px;
+      }
+
+      .buttons {
+        flex-direction: column;
+      }
+
+      .next-button,
+      .back-button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Fluxogram as Image -->
+    <img src="Directive_Variables.png" alt="Directive Variables Flow" class="flow-image">
+
+    <!-- Purposes Text -->
+    <div class="purposes">
+      <h2>Purposes</h2>
+      <p>
+        The purposes also serve as guidelines for the decision-making process throughout the entire design and operational phases of a DRT system. Since they are directly related to the main problems the system aims to solve, all features and decisions must align with these definitions. Through the analysis of different real-world operations, we were able to narrow down the possible purposes into six classifications:
+      </p>
+      <ul>
+        <li><u>Reduce operational costs / Reduce pollution:</u> The DRT system will serve as a substitute for an existing system that has proven economically inefficient. These scenarios usually occur when there isn’t enough demand to sustain a regular service, either due to population distribution or low-demand operating hours. Additionally, it aims to minimize the carbon footprint of the overall transport system in the area. This may involve reducing the number of private vehicles in favor of a public alternative (the DRT) or eliminating inefficiencies in an existing public transport system that lead to excessive pollution.</li>
+        <li><u>Be a mobility alternative:</u> Implemented in areas that heavily rely on existing public or private transportation, the DRT system offers an alternative mobility option. For example, it may aim to reduce the use of private vehicles by offering a premium public transport service, with enhanced comfort, at a slightly higher cost than conventional public transport but still far cheaper than private transport.</li>
+        <li><u>Serve the population in need:</u> DRT systems ensure accessibility where traditional public transport falls short, serving groups such as seniors, people with disabilities, and residents of remote areas. Their flexible, on-demand services enhance mobility options and promote community inclusivity.</li>
+        <li><u>Feed other transportation systems:</u> The DRT system provides access to larger transportation networks, such as airports, ports, train stations, and bus terminals. It serves as a bridge between passengers’ homes (or nearby collection points) and these mass transportation systems.</li>
+        <li><u>Complement existing public transport gaps:</u> In these cases, the current public transport system cannot meet all passenger needs. Therefore, an additional system is required to serve the unmet demand.</li>
+        <li><u>Provide transport in rural areas:</u> DRT systems address rural transit gaps by offering tailored routes and schedules. This improves access to essential services, employment, and regional connections, reduces dependence on private vehicles, and promotes sustainable community development.</li>
+      </ul>
+    </div>
+
+    <!-- Selection Section -->
+    <div class="selection">
+      <p>Select the purposes of the DRT. Up to two purposes can be selected.</p>
+      <label for="Purpose_1">Purpose 1:</label>
+      <select id="Purpose_1">
+        <option value="">-- Select a purpose --</option>
+        <option value="reduce_operational_cost">Reduce operational costs/Reduce pollution</option>
+        <option value="be_mobility_alternative">Be a mobility alternative</option>
+        <option value="serve_population_in_need">Serve the population in need</option>
+        <option value="Feed_other_transportation_systems">Feed other transportation systems</option>
+        <option value="Complement_existing_PT_gaps">Complement existing PT gaps</option>
+        <option value="Provide_transport_in_rural_areas">Provide transport in rural areas</option>
+      </select>
+
+      <label for="Purpose_2">Purpose 2</label>
+      <select id="Purpose_2">
+        <option value="">-- Select a purpose --</option>
+        <option value="reduce_operational_cost">Reduce operational costs/Reduce pollution</option>
+        <option value="be_mobility_alternative">Be a mobility alternative</option>
+        <option value="serve_population_in_need">Serve the population in need</option>
+        <option value="Feed_other_transportation_systems">Feed other transportation systems</option>
+        <option value="Complement_existing_PT_gaps">Complement existing PT gaps</option>
+        <option value="Provide_transport_in_rural_areas">Provide transport in rural areas</option>
+      </select>
+    </div>
+
+    <!-- Buttons -->
+    <div class="buttons">
+      <button class="back-button" onclick="window.location.href='1_APOLO_Structure.html'">BACK</button>
+      <button class="next-button" onclick="saveSelections()">NEXT</button>
+    </div>
+  </div>
+
+<script>
+  function saveSelections() {
+    const Purpose_1 = document.getElementById('Purpose_1').value;
+    const Purpose_2 = document.getElementById('Purpose_2').value;
+
+    if (Purpose_1 || Purpose_2) {
+      localStorage.setItem('Purpose_1', Purpose_1);
+      localStorage.setItem('Purpose_2', Purpose_2);
+      window.location.href = '3_target_passengers.html';
+    } else {
+      alert("Select at least one purpose");
+    }
+  }
+</script>
+</body>
+</html>

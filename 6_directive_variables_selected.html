@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Etapa 2 - User’s Perception</title>
+  <style>
+    body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-sizing: border-box;
+    }
+
+    .flow-image {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 30px;
+    }
+
+    .content {
+      width: 100%;
+      background-color: #ffffffaa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    .selection {
+      background-color: #f0f8ff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+
+    #map {
+      width: 100%;
+      height: 250px; /* 50% menor que antes */
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .next-button,
+    .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    .next-button:hover,
+    .back-button:hover {
+      background-color: #90c7e6;
+    }
+
+    @media (max-width: 768px) {
+      .content {
+        padding: 15px;
+      }
+      .selection {
+        font-size: 14px;
+      }
+      #map {
+        height: 150px; /* menor no mobile */
+      }
+      .buttons {
+        flex-direction: column;
+      }
+      .next-button,
+      .back-button {
+        width: 100%;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Fluxograma -->
+    <img src="Directive_Variables.png" alt="Directive Variables Flow" class="flow-image">
+
+    <!-- Conteúdo principal -->
+    <div class="content">
+      <h2>Directive Variables</h2>
+      <div class="selection" id="selection-Purpose_1"></div>
+      <div class="selection" id="selection-Purpose_2"></div>
+      <div class="selection" id="selection-Target_passenger"></div>
+      <div class="selection" id="selection-Service_Hour_1"></div>
+
+      <h3>Service Area:</h3>
+      <div id="map"></div>
+    </div>
+
+    <!-- Botões -->
+    <div class="buttons">
+      <button class="back-button" onclick="window.location.href='5_service_area.html'">BACK</button>
+      <button class="next-button" onclick="window.location.href='MUSE_0.html'">NEXT</button>
+    </div>
+  </div>
+
+  <script>
+    const Purpose_1Map = {
+      "reduce_operational_cost": "Reduce operational costs/Reduce pollution",
+      "be_mobility_alternative": "Be a mobility alternative",
+      "serve_population_in_need": "Serve the population in need",
+      "Feed_other_transportation_systems": "Feed other transportation systems",
+      "Complement_existing_PT_gaps": "Complement existing PT gaps",
+      "Provide_transport_in_rural_areas": "Provide transport in rural areas"
+    };
+
+    const Purpose_2Map = Purpose_1Map;
+
+    const Target_passengerMap = {
+      "general_passengers": "General Passengers",
+      "population_in_need": "Population in Need",
+      "time_sensitive_passengers": "Time Sensitive Passengers"
+    };
+
+    const Service_Hour_1Map = {
+      "conventional_business_hour": "Conventional Transport Business Hours",
+      "off_peak_only": "Off-peak hours only",
+      "peak_hours_only": "Peak hours only",
+      "specific_time_window": "Specific time window",
+      "night_services": "Night Services"
+    };
+
+    // Recuperar valores salvos
+    const Purpose_1 = localStorage.getItem('Purpose_1');
+    const Purpose_2 = localStorage.getItem('Purpose_2');
+    const Target_passenger = localStorage.getItem('Target_passenger');
+    const Service_Hour_1 = localStorage.getItem('Service_Hour_1');
+
+    document.getElementById('selection-Purpose_1').innerText =
+      "Purpose 1: " + (Purpose_1Map[Purpose_1] || "Não selecionado");
+
+    document.getElementById('selection-Purpose_2').innerText =
+      "Purpose 2: " + (Purpose_2Map[Purpose_2] || "Não selecionado");
+
+    document.getElementById('selection-Target_passenger').innerText =
+      "Target Passengers: " + (Target_passengerMap[Target_passenger] || "Não selecionado");
+
+    document.getElementById('selection-Service_Hour_1').innerText =
+      "Service Hours: " + (Service_Hour_1Map[Service_Hour_1] || "Não selecionado");
+
+    // ---- Reconstituir mapa ----
+    const storageKey = "service_area_points";
+    const savedPoints = localStorage.getItem(storageKey);
+
+    if (savedPoints) {
+      const coords = JSON.parse(savedPoints);
+      if (coords.length > 0) {
+        const map = L.map('map');
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19
+        }).addTo(map);
+
+        const latLngs = coords.map(c => L.latLng(c[0], c[1]));
+
+        // Adicionar marcadores
+        latLngs.forEach(p => {
+          L.circleMarker(p, { radius: 5, color: '#ff7800' }).addTo(map);
+        });
+
+        // Adicionar polígono se houver pelo menos 3 pontos
+        if (latLngs.length >= 3) {
+          L.polygon(latLngs, { color: '#0077b6', weight: 2, fillOpacity: 0.15 }).addTo(map);
+        }
+
+        map.fitBounds(L.latLngBounds(latLngs).pad(0.2));
+      }
+    }
+  </script>
+
+</body>
+</html>

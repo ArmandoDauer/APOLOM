@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Etapa 1 - Decision Variables</title>
+  <style>
+    body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .flow-image {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 30px;
+    }
+
+    .purposes {
+      text-align: justify;
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      background-color: #ffffffaa;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .selection {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    select {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      background-color: #f9f9f9;
+      width: 100%;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .next-button,
+    .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    .next-button:hover,
+    .back-button:hover {
+      background-color: #90c7e6;
+    }
+
+    @media (max-width: 768px) {
+      .purposes {
+        font-size: 14px;
+        padding: 15px;
+      }
+
+      select {
+        font-size: 14px;
+        padding: 8px;
+      }
+
+      .buttons {
+        flex-direction: column;
+      }
+
+      .next-button,
+      .back-button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Fluxogram as Image -->
+    <img src="Start.png" alt="Start Flow" class="flow-image">
+
+    <!-- Purposes Text -->
+    <div class="purposes">
+      <h2>APOLO</h2>
+      <p>
+        Demand-responsive transport (DRT) covers transport systems that combine elements of public transport and taxi services. Like taxis, DRT can adjust routes, stops, and schedules based on user needs, while still offering shared rides like traditional public transport.
+      </p>
+      <p>
+        DRT has been used for over 40 years and is a good alternative where demand is low or spread out. Its main strength is flexibility—adapting quickly to demand through changes in routes, fleet size, stop locations, and schedules.
+      </p>
+      <p>
+        However, this flexibility also makes DRT systems complex to design, especially for those without technical expertise. Poor design can lead to inefficient services that don’t meet user needs.
+      </p>
+      <p>
+        Although many planning methods exist, they often focus on only one part of the design and don’t provide a complete view. There is a need for a method that considers service goals, local context, user needs, flexibility levels, and operational limits all at once.
+      </p>
+      <p>
+        To address this, the APOLO framework was developed. It helps design efficient DRT systems—especially for low-density areas—by guiding decision-makers through an iterative process. APOLO uses real-world examples and factors like purpose, location, users, and service hours to find the best system setup for both users and operators.
+      </p>
+    </div>
+
+    <!-- Buttons -->
+    <div class="buttons">
+      <button class="next-button" onclick="window.location.href='01_Decision_Variables.html'">NEXT</button>
+    </div>
+  </div>
+
+</body>
+</html>
