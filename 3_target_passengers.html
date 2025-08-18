@@ -147,17 +147,19 @@
 
 <script>
   function saveSelections() {
-    const Target_passenger = document.getElementById('Target_passenger').value;
+    const Target_passenger = document.getElementById('Target_passenger').value.trim();
 
-    if (Target_passenger) {
+    if (Target_passenger !== "") {
       localStorage.setItem('Target_passenger', Target_passenger);
       window.location.href = '4_service_hours.html';
     } else {
-      alert("Select the target passenger.");
+      alert("⚠️ You need to select a target passenger to continue.");
     }
   }
 </script>
 
 </body>
 </html>
+
+
 
