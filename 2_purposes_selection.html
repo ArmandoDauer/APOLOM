@@ -57,27 +57,19 @@
       background-color: #f9f9f9;
       width: 100%;
     }
-    /* Default (PC): side by side — Back left, Next right */
+
     .buttons {
       display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-    
-    /* Mobile: stack vertically with Next on top */
-    @media (max-width: 768px) {
-      .buttons {
-        flex-direction: column-reverse; /* puts NEXT above BACK */
-        align-items: center;            /* center the buttons */
-      }
-    
-      .buttons button {
-        width: 100%;    /* optional: full width on mobile */
-        max-width: 300px;
-      }
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
     }
 
-
+    .buttons {
+        flex-direction: column;
+      }
 
     .next-button,
     .back-button {
@@ -163,8 +155,8 @@
 
     <!-- Buttons -->
     <div class="buttons">
-      <button class="next-button" onclick="saveSelections()">NEXT</button>
       <button class="back-button" onclick="window.location.href='1_APOLO_Structure.html'">BACK</button>
+      <button class="next-button" onclick="saveSelections()">NEXT</button>
     </div>
   </div>
 
@@ -184,6 +176,7 @@
 </script>
 </body>
 </html>
+
 
 
 
