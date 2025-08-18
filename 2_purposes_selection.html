@@ -162,18 +162,20 @@
 
 <script>
   function saveSelections() {
-    const Purpose_1 = document.getElementById('Purpose_1').value;
-    const Purpose_2 = document.getElementById('Purpose_2').value;
+    const Purpose_1 = document.getElementById('Purpose_1').value.trim();
+    const Purpose_2 = document.getElementById('Purpose_2').value.trim();
 
-    if (Purpose_1 || Purpose_2) {
+    if (Purpose_1 !== "" || Purpose_2 !== "") {
       localStorage.setItem('Purpose_1', Purpose_1);
       localStorage.setItem('Purpose_2', Purpose_2);
       window.location.href = '3_target_passengers.html';
     } else {
-      alert("Select at least one purpose");
+      alert("⚠️ At least one purpose must be selected.");
     }
   }
 </script>
 </body>
 </html>
+
+
 
