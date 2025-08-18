@@ -157,18 +157,21 @@
     </div>
   </div>
 
+
+    
 <script>
   function saveSelections() {
-    const Service_Hour_1 = document.getElementById('Service_Hour_1').value;
+    const Service_Hour_1 = document.getElementById('Service_Hour_1').value.trim();
 
-    if (Service_Hour_1) {
+    if (Service_Hour_1 !== "") {
       localStorage.setItem('Service_Hour_1', Service_Hour_1);
       window.location.href = '5_service_area.html';
     } else {
-      alert("Select a service hour.");
+      alert("⚠️ You need to select a service hour to continue.");
     }
   }
 </script>
 </body>
 </html>
+
 
