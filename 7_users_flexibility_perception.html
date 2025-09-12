@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APOLO - MUSE Module</title>
+  <style>
+    body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .flow {
+      width: 100%;
+      background-color: #e5eff5;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .step, .step-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .step {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #1e90ff;
+      color: white;
+      font-size: 14px;
+    }
+
+    .step.active {
+      background-color: #87cefa;
+      color: black;
+    }
+
+    .step-label {
+      position: static;
+      font-size: 12px;
+      width: auto;
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    .step-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      margin: 6px 4px;
+      min-width: 70px;
+    }
+
+    .arrow {
+      width: 24px;
+      height: 4px;
+      background-color: #a0a0a0;
+      margin: 0 4px;
+    }
+
+    .triangle-start, .triangle-end {
+      width: 0;
+      height: 0;
+      border-top: 18px solid transparent;
+      border-bottom: 18px solid transparent;
+    }
+
+    .triangle-start { border-left: 28px solid #1e90ff; }
+    .triangle-end { border-right: 28px solid #1e90ff; }
+
+    .triangle-label {
+      font-size: 12px;
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    .description {
+      width: 100%;
+      text-align: justify;
+      font-size: 16px;
+      line-height: 1.6;
+      background-color: #ffffffaa;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .centered-title {
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .content {
+      width: 100%;
+      padding: 0 0 10px 0;
+    }
+
+    .line {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    select {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      background-color: #f9f9f9;
+      width: 100%;
+    }
+
+    hr.section {
+      width: 100%;
+      border: none;
+      border-top: 1px solid #c9d6df;
+      margin: 10px 0 10px;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    .next-button, .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    .next-button:hover, .back-button:hover {
+      background-color: #90c7e6;
+    }
+
+    /* Tooltip for the Default button */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 260px;
+      background-color: #333;
+      color: #fff;
+      text-align: left;
+      border-radius: 6px;
+      padding: 8px 10px;
+      position: absolute;
+      z-index: 1000;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      font-size: 12px;
+      line-height: 1.3;
+    }
+    .tooltip .tooltiptext::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 6px;
+      border-style: solid;
+      border-color: #333 transparent transparent transparent;
+    }
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+      .description {
+        font-size: 14px;
+        padding: 15px;
+      }
+      select {
+        font-size: 14px;
+        padding: 8px;
+      }
+      .buttons {
+        flex-direction: column;
+      }
+      .next-button, .back-button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="flow">
+         <div class="flow">
+          <img src="MUSE.png" alt="Fluxo MUSE" style="max-width:100%; height:auto;">
+        </div>
+    </div>
+
+    <div class="description">
+      <p>
+        For a transportation system to be efficient and effective in achieving its intended objectives, it must be well-adapted to the socio-political and economic context of the service area in which it operates. In the case of DRT systems, these regional characteristics influence, among other aspects, the system’s level of customization.
+      </p>
+      <p>
+        Systems with high customizability may discourage time-sensitive users, while low customizability can drive passengers toward private vehicles. Thus, customizability strongly shapes how users perceive a system’s usefulness and their willingness to use it.
+      </p>
+      <p>
+        To address this, MUSE models the impact of customizability through inputs reflecting passenger perceptions. These are captured in a matrix that links each operational variable to the level of customizability of its possible values.
+      </p>
+      <ul>
+        <li><u>Effect:</u> Decide if more customizability makes the system more or less useful to passengers.</li>
+        <li><u>Intensity:</u> Rate, from “Weak” to “Strong,” how much added customizability affects user choice to use the service.</li>
+        <li><u>Customizability of Value:</u> Classify each operation option from “Not customizable” to “Highly customizable.”</li>
+      </ul>
+    </div>
+
+    <hr class="section" />
+
+    <!-- PUDO -->
+    <div class="centered-title">
+      <h1>Pick-UP and Drop-off Locations</h1>
+    </div>
+
+    <div class="content">
+      <div class="line">
+        <h3>Effect of increasing the personalization on demand</h3>
+        <select id="Effect_Pick_up_and_drop_off">
+          <option value="">-- Select an effect --</option>
+          <option value="1">Positive</option>
+          <option value="-1">Negative</option>
+        </select>
+      </div>
+
+      <div class="line">
+        <h3>How impactful increasing the personalization on this variable would be on users' decisions to use or not use the service</h3>
+        <select id="Impact_Pick_up_and_drop_off">
+          <option value="">-- Select an Impact --</option>
+          <option value="10">Strong</option>
+          <option value="7.5">Moderate</option>
+          <option value="5">Neutral</option>
+          <option value="2.5">Limited</option>
+          <option value="1">Weak</option>
+        </select>
+      </div>
+
+      <div class="centered-title">
+        <h3>Classification of Pick-up and Drop-off possible values in terms of personalization</h3>
+      </div>
+
+      <div class="line">
+        <p>
+          <u>Specific Request Point:</u> PPick-up and drop-off occur exactly at origins and destinations. This option is the most customizable, improving comfort and accessibility but reducing planning efficiency and potentially increasing travel time for others.
+        </p>
+        <select id="Flexibility_specific_request_point">
+          <option value="">-- Select level of personalization --</option>
+          <option value="10">Highly personalized</option>
+          <option value="7.5">Personalized</option>
+          <option value="5">Moderately personalized</option>
+          <option value="2.5">Limited personalization</option>
+          <option value="1">No personalization</option>
+        </select>
+      </div>
+
+      <div class="line">
+        <p>
+          <u>Close to the Request Point:</u> Pick-up and drop-off happen near the origin and destination, usually a short walk away. This supports more efficient routing at the cost of some passenger effort, representing a balance between full customizability and fixed points.
+        </p>
+        <select id="Flexibility_close_to_the_request_point">
+          <option value="">-- Select level of personalization --</option>
+          <option value="10">Highly personalized</option>
+          <option value="7.5">Personalized</option>
+          <option value="5">Moderately personalized</option>
+          <option value="2.5">Limited personalization</option>
+          <option value="1">No personalization</option>
+        </select>
+      </div>
+
+      <div class="line">
+        <p>
+          <u>Existing Mapped Point:</u> Passengers use fixed pick-up and drop-off points, either physical or virtual. This provides predictability for routing but may reduce accessibility, especially for those with mobility challenges.
+        </p>
+        <select id="Flexibility_existing_mapped_point">
+  <option value="">-- Select level of personalization --</option>
+  <option value="10">Highly personalized</option>
+  <option value="7.5">Personalized</option>
+  <option value="5">Moderately personalized</option>
+  <option value="2.5">Limited personalization</option>
+  <option value="1">No personalization</option>
+        </select>
+      </div>
+    </div>
+
+    <hr class="section" />
+
+    <!-- Vehicle Route -->
+    <div class="centered-title">
+      <h1>Vehicle Route</h1>
+    </div>
+
+    <div class="content">
+      <div class="line">
+        <h3>Effect of increasing the personalization on demand</h3>
+        <select id="Effect_Vehicle_Route">
+          <option value="">-- Select an effect --</option>
+          <option value="1">Positive</option>
+          <option value="-1">Negative</option>
+        </select>
+      </div>
+
+      <div class="line">
+        <h3>How impactful increasing the personalization on this variable would be on users' decisions to use or not use the service</h3>
+        <select id="Impact_Vehicle_Route">
+          <option value="">-- Select an Impact --</option>
+          <option value="10">Strong</option>
+          <option value="7.5">Moderate</option>
+          <option value="5">Neutral</option>
+          <option value="2.5">Limited</option>
+          <option value="1">Weak</option>
+        </select>
+      </div>
+
+      <div class="centered-title">
+        <h3>Classification of Vehicle Route possible values in terms of personalization</h3>
+      </div>
+
+      <div class="line">
+        <p><u>Free Floating Between Stops:</u> No fixed route; paths are recalculated based on demand. This improves efficiency by serving only requested areas but requires high computational effort and becomes complex as trips increase.</p>
+        <select id="Flexibility_free_floating_between_stops">
+  <option value="">-- Select level of personalization --</option>
+  <option value="10">Highly personalized</option>
+  <option value="7.5">Personalized</option>
+  <option value="5">Moderately personalized</option>
+  <option value="2.5">Limited personalization</option>
+  <option value="1">No personalization</option>
+        </select>
+      </div>
+
+      <div class="line">
+        <p><u>Fixed Route with Diversions:</u> Vehicles follow a set route with limited deviations to meet specific requests. This balances predictability with accessibility but may still result in low occupancy where demand is weak.</p>
+        <select id="Flexibility_fixed_route_with_diversion">
+  <option value="">-- Select level of personalization --</option>
+  <option value="10">Highly personalized</option>
+  <option value="7.5">Personalized</option>
+  <option value="5">Moderately personalized</option>
+  <option value="2.5">Limited personalization</option>
+  <option value="1">No personalization</option>
+        </select>
+      </div>
+
+      <div class="line">
+        <p><u>Fixed Route:</u> Vehicles run on a fixed, unchangeable route. Predictable for users and operators but inefficient if serving areas without demand.</p>
+        <select id="Flexibility_fixed_route">
+  <option value="">-- Select level of personalization --</option>
+  <option value="10">Highly personalized</option>
+  <option value="7.5">Personalized</option>
+  <option value="5">Moderately personalized</option>
+  <option value="2.5">Limited personalization</option>
+  <option value="1">No personalization</option>
+        </select>
+      </div>
+    </div>
+
+    <hr class="section" />
+
+    <!-- Booking Leading Time -->
+    <div class="centered-title">
+      <h1>Required Booking Leading Time</h1>
+    </div>
+
+    <div class="content">
+      <div class="line">
+        <h3>Effect of increasing the personalization on demand</h3>
+        <select id="Effect_Leading_Booking_Time">
+          <option value="">-- Select an effect --</option>
+          <option value="1">Positive</option>
+          <option value="-1">Negative</option>
+        </select>
+      </div>
+
+      <div class="line">
+        <h3>How impactful increasing the personalization on this variable would be on users' decisions to use or not use the service</h3>
+        <select id="Impact_Leading_Booking_Time">
+          <option value="">-- Select an Impact --</option>
+          <option value="10">Strong</option>
+          <option value="7.5">Moderate</option>
+          <option value="5">Neutral</option>
+          <option value="2.5">Limited</option>
+          <option value="1">Weak</option>
+        </select>
+      </div>
+
+      <div class="centered-title">
+        <h3>Classification of Required Booking Leading Time possible values in terms of personalization</h3>
+      </div>
+
+      <div class="line">
+        <p><u>At the Spot:</u> Trips are requested and served immediately, with wait times based on vehicle travel. Highly adaptable to real-time demand, it offers comfort similar to private cars.</p>
+        <select id="Flexibility_At_the_spot">
+  <option value="">-- Select level of personalization --</option>
+  <option value="10">Highly personalized</option>
+  <option value="7.5">Personalized</option>
+  <option value="5">Moderately personalized</option>
+  <option value="2.5">Limited personalization</option>
+  <option value="1">No personalization</option>
+        </select>
+      </div>
+
+      <div class="line">
+        <p><u>A Prior:</u> Trips must be booked in advance, giving operators time to plan and optimize routes. Longer notice improves efficiency but reduces spontaneity for passengers.</p>
+        <select id="Flexibility_A_prior">
+  <option value="">-- Select level of personalization --</option>
+  <option value="10">Highly personalized</option>
+  <option value="7.5">Personalized</option>
+  <option value="5">Moderately personalized</option>
+  <option value="2.5">Limited personalization</option>
+  <option value="1">No personalization</option>
+        </select>
+      </div>
+    </div>
+
+    <hr class="section" />
+
+    <!-- Time Window -->
+    <div class="centered-title">
+      <h1>Time Window Size</h1>
+    </div>
+
+    <div class="content">
+      <div class="line">
+        <h3>Effect of increasing the personalization on demand</h3>
+        <select id="Effect_Time_Window_Size">
+          <option value="">-- Select an effect --</option>
+          <option value="1">Positive</option>
+          <option value="-1">Negative</option>
+        </select>
+      </div>
+
+      <div class="line">
+        <h3>How impactful increasing the personalization on this variable would be on users' decisions to use or not use the service</h3>
+        <select id="Impact_Time_Window_Size">
+          <option value="">-- Select an Impact --</option>
+          <option value="10">Strong</option>
+          <option value="7.5">Moderate</option>
+          <option value="5">Neutral</option>
+          <option value="2.5">Limited</option>
+          <option value="1">Weak</option>
+        </select>
+      </div>
+
+      <div class="centered-title">
+        <h3>Classification of Time Window Size possible values in terms of personalization</h3>
+      </div>
+
+      <div class="line">
+        <p><u>5 Minutes Time-Window</u></p>
+        <select id="Flexibility_5_Minute">
+  <option value="">-- Select level of personalization --</option>
+  <option value="10">Highly personalized</option>
+  <option value="7.5">Personalized</option>
+  <option value="5">Moderately personalized</option>
+  <option value="2.5">Limited personalization</option>
+  <option value="1">No personalization</option>
+        </select>
+      </div>
+
+      <div class="line">
+        <p><u>10 Minutes Time-Window</u></p>
+        <select id="Flexibility_10_Minute">
+  <option value="">-- Select level of personalization --</option>
+  <option value="10">Highly personalized</option>
+  <option value="7.5">Personalized</option>
+  <option value="5">Moderately personalized</option>
+  <option value="2.5">Limited personalization</option>
+  <option value="1">No personalization</option>
+        </select>
+      </div>
+
+      <div class="line">
+        <p><u>15 Minutes Time-Window</u></p>
+        <select id="Flexibility_15_Minute">
+  <option value="">-- Select level of personalization --</option>
+  <option value="10">Highly personalized</option>
+  <option value="7.5">Personalized</option>
+  <option value="5">Moderately personalized</option>
+  <option value="2.5">Limited personalization</option>
+  <option value="1">No personalization</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button class="back-button" onclick="window.location.href='6_directive_variables_selected.html'">BACK</button>
+      <div class="tooltip">
+        <button class="next-button" id="defaultButton" title="Applies a suggested initial setup" onclick="applyDefault()">Default</button>
+        <div class="tooltiptext">Apply a suggested initial setup based on the selected target passenger. This is only a starting point and you can adjust any field.</div>
+      </div>
+      <button class="next-button" onclick="saveSelections()">NEXT</button>
+    </div>
+
+  </div>
+
+  <script>
+    // Filled presets based on your mapping
+    const DEFAULT_PRESETS = {
+      "general_passengers": {
+        "Effect_Pick_up_and_drop_off": "1",
+        "Impact_Pick_up_and_drop_off": "7.5",
+        "Flexibility_specific_request_point": "10",
+        "Flexibility_close_to_the_request_point": "7.5",
+        "Flexibility_existing_mapped_point": "1",
+        "Effect_Vehicle_Route": "1",
+        "Impact_Vehicle_Route": "5",
+        "Flexibility_free_floating_between_stops": "10",
+        "Flexibility_fixed_route_with_diversion": "2.5",
+        "Flexibility_fixed_route": "1",
+        "Effect_Leading_Booking_Time": "-1",
+        "Impact_Leading_Booking_Time": "5",
+        "Flexibility_At_the_spot": "10",
+        "Flexibility_A_prior": "2.5",
+        "Effect_Time_Window_Size": "-1",
+        "Impact_Time_Window_Size": "5",
+        "Flexibility_5_Minute": "2.5",
+        "Flexibility_10_Minute": "5",
+        "Flexibility_15_Minute": "10"
+      },
+      "population_in_need": {
+        "Effect_Pick_up_and_drop_off": "1",
+        "Impact_Pick_up_and_drop_off": "10",
+        "Flexibility_specific_request_point": "10",
+        "Flexibility_close_to_the_request_point": "7.5",
+        "Flexibility_existing_mapped_point": "1",
+        "Effect_Vehicle_Route": "1",
+        "Impact_Vehicle_Route": "7.5",
+        "Flexibility_free_floating_between_stops": "10",
+        "Flexibility_fixed_route_with_diversion": "7.5",
+        "Flexibility_fixed_route": "1",
+        "Effect_Leading_Booking_Time": "-1",
+        "Impact_Leading_Booking_Time": "1",
+        "Flexibility_At_the_spot": "10",
+        "Flexibility_A_prior": "5",
+        "Effect_Time_Window_Size": "-1",
+        "Impact_Time_Window_Size": "1",
+        "Flexibility_5_Minute": "5",
+        "Flexibility_10_Minute": "7.5",
+        "Flexibility_15_Minute": "10"
+      },
+      "time_sensitive_passengers": {
+        "Effect_Pick_up_and_drop_off": "-1",
+        "Impact_Pick_up_and_drop_off": "7.5",
+        "Flexibility_specific_request_point": "10",
+        "Flexibility_close_to_the_request_point": "7.5",
+        "Flexibility_existing_mapped_point": "1",
+        "Effect_Vehicle_Route": "1",
+        "Impact_Vehicle_Route": "7.5",
+        "Flexibility_free_floating_between_stops": "10",
+        "Flexibility_fixed_route_with_diversion": "7.5",
+        "Flexibility_fixed_route": "1",
+        "Effect_Leading_Booking_Time": "-1",
+        "Impact_Leading_Booking_Time": "10",
+        "Flexibility_At_the_spot": "10",
+        "Flexibility_A_prior": "2.5",
+        "Effect_Time_Window_Size": "-1",
+        "Impact_Time_Window_Size": "10",
+        "Flexibility_5_Minute": "5",
+        "Flexibility_10_Minute": "7.5",
+        "Flexibility_15_Minute": "10"
+      }
+    };
+
+    function applyDefault() {
+      const target = localStorage.getItem('Target_passenger');
+      if (!target) {
+        alert("First, select the target passenger on the previous page. (It saves to browser storage.)");
+        return;
+      }
+      const preset = DEFAULT_PRESETS[target];
+      if (!preset) {
+        alert("No preset configured for: " + target);
+        return;
+      }
+      let applied = 0;
+      for (const [fieldId, value] of Object.entries(preset)) {
+        if (value !== undefined && value !== null && String(value) !== "") {
+          const el = document.getElementById(fieldId);
+          if (el) {
+            el.value = String(value);
+            applied++;
+          }
+        }
+      }
+      if (applied === 0) {
+        alert("No fields were changed. The preset for \"" + target + "\" seems empty.");
+      } else {
+        // Brief visual feedback
+        for (const [fieldId, value] of Object.entries(preset)) {
+          const el = document.getElementById(fieldId);
+          if (el) {
+            el.style.boxShadow = '0 0 0 3px rgba(30,144,255,0.35)';
+            setTimeout(() => { el.style.boxShadow = ''; }, 600);
+          }
+        }
+      }
+    }
+
+    function saveSelections() {
+      const Effect_Pick_up_and_drop_off = document.getElementById("Effect_Pick_up_and_drop_off").value;
+      const Impact_Pick_up_and_drop_off = document.getElementById("Impact_Pick_up_and_drop_off").value;
+      const Flexibility_specific_request_point = document.getElementById("Flexibility_specific_request_point").value;
+      const Flexibility_close_to_the_request_point = document.getElementById("Flexibility_close_to_the_request_point").value;
+      const Flexibility_existing_mapped_point = document.getElementById("Flexibility_existing_mapped_point").value;
+
+      const Effect_Vehicle_Route = document.getElementById("Effect_Vehicle_Route").value;
+      const Impact_Vehicle_Route = document.getElementById("Impact_Vehicle_Route").value;
+      const Flexibility_free_floating_between_stops = document.getElementById("Flexibility_free_floating_between_stops").value;
+      const Flexibility_fixed_route_with_diversion = document.getElementById("Flexibility_fixed_route_with_diversion").value;
+      const Flexibility_fixed_route = document.getElementById("Flexibility_fixed_route").value;
+
+      const Effect_Leading_Booking_Time = document.getElementById("Effect_Leading_Booking_Time").value;
+      const Impact_Leading_Booking_Time = document.getElementById("Impact_Leading_Booking_Time").value;
+      const Flexibility_At_the_spot = document.getElementById("Flexibility_At_the_spot").value;
+      const Flexibility_A_prior = document.getElementById("Flexibility_A_prior").value;
+
+      const Effect_Time_Window_Size = document.getElementById("Effect_Time_Window_Size").value;
+      const Impact_Time_Window_Size = document.getElementById("Impact_Time_Window_Size").value;
+      const Flexibility_5_Minute = document.getElementById("Flexibility_5_Minute").value;
+      const Flexibility_10_Minute = document.getElementById("Flexibility_10_Minute").value;
+      const Flexibility_15_Minute = document.getElementById("Flexibility_15_Minute").value;
+
+      if (
+        Effect_Pick_up_and_drop_off &&
+        Impact_Pick_up_and_drop_off &&
+        Flexibility_specific_request_point &&
+        Flexibility_close_to_the_request_point &&
+        Flexibility_existing_mapped_point &&
+        Effect_Vehicle_Route &&
+        Impact_Vehicle_Route &&
+        Flexibility_free_floating_between_stops &&
+        Flexibility_fixed_route_with_diversion &&
+        Flexibility_fixed_route &&
+        Effect_Leading_Booking_Time &&
+        Impact_Leading_Booking_Time &&
+        Flexibility_At_the_spot &&
+        Flexibility_A_prior &&
+        Effect_Time_Window_Size &&
+        Impact_Time_Window_Size &&
+        Flexibility_5_Minute &&
+        Flexibility_10_Minute &&
+        Flexibility_15_Minute
+      ) {
+        localStorage.setItem('Effect_Pick_up_and_drop_off', Effect_Pick_up_and_drop_off);
+        localStorage.setItem('Impact_Pick_up_and_drop_off', Impact_Pick_up_and_drop_off);
+        localStorage.setItem('Flexibility_specific_request_point', Flexibility_specific_request_point);
+        localStorage.setItem('Flexibility_close_to_the_request_point', Flexibility_close_to_the_request_point);
+        localStorage.setItem('Flexibility_existing_mapped_point', Flexibility_existing_mapped_point);
+        localStorage.setItem('Effect_Vehicle_Route', Effect_Vehicle_Route);
+        localStorage.setItem('Impact_Vehicle_Route', Impact_Vehicle_Route);
+        localStorage.setItem('Flexibility_free_floating_between_stops', Flexibility_free_floating_between_stops);
+        localStorage.setItem('Flexibility_fixed_route_with_diversion', Flexibility_fixed_route_with_diversion);
+        localStorage.setItem('Flexibility_fixed_route', Flexibility_fixed_route);
+        localStorage.setItem('Effect_Leading_Booking_Time', Effect_Leading_Booking_Time);
+        localStorage.setItem('Impact_Leading_Booking_Time', Impact_Leading_Booking_Time);
+        localStorage.setItem('Flexibility_At_the_spot', Flexibility_At_the_spot);
+        localStorage.setItem('Flexibility_A_prior', Flexibility_A_prior);
+        localStorage.setItem('Effect_Time_Window_Size', Effect_Time_Window_Size);
+        localStorage.setItem('Impact_Time_Window_Size', Impact_Time_Window_Size);
+        localStorage.setItem('Flexibility_5_Minute', Flexibility_5_Minute);
+        localStorage.setItem('Flexibility_10_Minute', Flexibility_10_Minute);
+        localStorage.setItem('Flexibility_15_Minute', Flexibility_15_Minute);
+        window.location.href = '8_MUSE_1.html';
+      } else {
+        alert("⚠️ Missing items! Please complete all fields before proceeding.");
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APOLO - MUSE Module</title>
+  <style>
+     body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      padding-top: 140px;
+      box-sizing: border-box;
+    }
+      
+    .flow-image {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 30px;
+    }
+
+    .flow {
+    /*  position: fixed; */
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: #e5eff5;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 10px;
+      justify-content: center;
+      z-index: 1000;
+      flex-wrap: wrap;
+    }
+
+    .description {
+      padding-top: 70px;
+      max-width: 900px;
+      margin: 0 auto 60px auto;
+      text-align: justify;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .step, .step-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .step {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #1e90ff;
+      color: white;
+    }
+
+    .step.active {
+      background-color: #87cefa;
+      color: black;
+    }
+
+    .step-label {
+      position: absolute;
+      top: 60px;
+      font-size: 12px;
+      width: 80px;
+      text-align: center;
+    }
+
+    .step-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .arrow {
+      width: 30px;
+      height: 5px;
+      background-color: #a0a0a0;
+    }
+
+    .triangle-start, .triangle-end {
+      width: 0;
+      height: 0;
+      border-top: 25px solid transparent;
+      border-bottom: 25px solid transparent;
+    }
+
+    .triangle-start {
+      border-left: 40px solid #1e90ff;
+    }
+
+    .triangle-end {
+      border-right: 40px solid #1e90ff;
+    }
+
+    .triangle-start.active {
+      border-left-color: #87cefa;
+    }
+
+    .triangle-end.active {
+      border-right-color: #87cefa;
+    }
+
+    .content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .line {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+
+
+    }
+
+    .left {
+      flex: 1;
+      text-align: flex;
+      font-size: 16px;
+      line-height: 1.6;
+      width: 400px;
+    }
+
+    .right {
+      flex: 1;
+      padding-top: 70px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 400px;
+    }
+
+    select {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      background-color: #f9f9f9;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .next-button,
+    .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    .next-button:hover,
+    .back-button:hover {
+      background-color: #90c7e6;
+    }
+
+    .centered-title {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Conteúdo principal -->
+  <div class="content">
+    <img src="MUSE.png" alt="Start Flow" class="flow-image">
+    <div class="line">
+      
+      <div class="right"> 
+      <p id="Purpose1" style="margin: 2px 0; line-height: 1.2;">Aqui aparecerá a flexibilidade.</p>
+      <p id="resultado1" style="margin: 2px 0; line-height: 1.2;">Aqui aparecerá o resultado.</p>
+      <p id="resultado2" style="margin: 2px 0; line-height: 1.2;">Aqui aparecerá o resultado.</p>
+
+      <p id="Purpose2">Aqui aparecerá a flexibilidade.</p>
+      <p id="resultado4" style="margin: 2px 0; line-height: 1.2;">Aqui aparecerá o resultado.</p>
+      <p id="resultado5" style="margin: 2px 0; line-height: 1.2;">Aqui aparecerá o resultado.</p>
+      </div>
+    </div>
+      
+  <div class="content">
+      <div class="left">
+      <p>Based on the suitability analysis on the left, select the Booking methodology for the DRT.</p>
+      <!-- <label for="Selected_Pick_up_and_Drop_off">Purpose 1:</label>  -->
+      <select id="Selected_Booking">
+        <option value="">-- Select a Booking methodology --</option>
+        <option value="At_the_spot">At the Spot</option>
+        <option value="A_prior">A prior</option>
+        <option value="At_the_spot_and_A_prior">At the Spot and A Prior</option>
+      </select>
+      </div>
+
+    </div>
+  </div>
+
+<!-- Botão corrigido -->
+    <div class="buttons">
+      <button class="back-button" onclick="window.location.href='8_MUSE_2.html'">BACK</button>
+      <button class="next-button" onclick="saveSelections()">NEXT</button>
+    </div>
+
+<script>
+  // Recuperar valores do localStorage
+
+
+  // Pick-UP and Drop-off Locations
+  const pmRaw = localStorage.getItem('Effect_Leading_Booking_Time');
+  const aRaw = localStorage.getItem('Impact_Leading_Booking_Time');
+  const b1Raw = localStorage.getItem('Flexibility_At_the_spot');
+  const b2Raw = localStorage.getItem('Flexibility_A_prior');
+  const Purpose1 = localStorage.getItem('Purpose_1');
+  const Purpose2 = localStorage.getItem('Purpose_2');
+
+if(Purpose1 === "reduce_operational_cost"){
+  document.getElementById("Purpose1").innerHTML = Purpose1 !== null
+    ? "Considering the Purpose 1: <b>Reduce Operational Costs</b>, along with previous DRT experiences, APOLO classifies the following characteristics as:" 
+    : "Purpose1 not founded";
+}
+
+if(Purpose2 === "reduce_operational_cost"){
+  document.getElementById("Purpose2").innerHTML = Purpose1 !== null
+    ? "Considering the Purpose 2: <b>Reduce Operational Costs</b>, along with previous DRT experiences, APOLO classifies the following characteristics as:" 
+    : "Purpose2 not founded";
+}
+
+if(Purpose1 === "be_mobility_alternative"){
+  document.getElementById("Purpose1").innerHTML = Purpose1 !== null
+    ? "Considering the Purpose 1: <b>Be a Mobility Alternative</b>, along with previous DRT experiences, APOLO classifies the following characteristics as:" 
+    : "Purpose1 not founded";
+}
+
+if(Purpose2 === "be_mobility_alternative"){
+  document.getElementById("Purpose2").innerHTML = Purpose1 !== null
+    ? "Considering the Purpose 2: <b>Be a Mobility Alternative</b>, along with previous DRT experiences, APOLO classifies the following characteristics as:" 
+    : "Purpose2 not founded";
+}
+
+if(Purpose1 === "serve_population_in_need"){
+  document.getElementById("Purpose1").innerHTML = Purpose1 !== null
+    ? "Considering the Purpose 1: <b>Serve the Population in Need</b>, along with previous DRT experiences, APOLO classifies the following characteristics as:" 
+    : "Purpose1 not founded";
+}
+
+if(Purpose2 === "serve_population_in_need"){
+  document.getElementById("Purpose2").innerHTML = Purpose1 !== null
+    ? "Considering the Purpose 2: <b>Serve the Population in Need</b>, along with previous DRT experiences, APOLO classifies the following characteristics as:" 
+    : "Purpose2 not founded";
+}
+
+if(Purpose1 === "Feed_other_transportation_systems"){
+  document.getElementById("Purpose1").innerHTML = Purpose1 !== null
+    ? "Considering the Purpose 1: <b>Feed Other Transportation Systems</b>, along with previous DRT experiences, APOLO classifies the following characteristics as:" 
+    : "Purpose1 not founded";
+}
+
+if(Purpose2 === "Feed_other_transportation_systems"){
+  document.getElementById("Purpose2").innerHTML = Purpose1 !== null
+    ? "Considering the Purpose 2: <b>Feed Other Transportation Systems</b>, along with previous DRT experiences, APOLO classifies the following characteristics as:" 
+    : "Purpose2 not founded";
+}
+
+if(Purpose1 === "Complement_existing_PT_gaps"){
+  document.getElementById("Purpose1").innerHTML = Purpose1 !== null
+    ? "Considering the Purpose 1: <b>Complement Existing PT Gaps</b>, along with previous DRT experiences, APOLO classifies the following characteristics as:" 
+    : "Purpose1 not founded";
+}
+
+if(Purpose2 === "Complement_existing_PT_gaps"){
+  document.getElementById("Purpose2").innerHTML = Purpose1 !== null
+    ? "Considering the Purpose 2: <b>Complement Existing PT Gaps</b>, along with previous DRT experiences, APOLO classifies the following characteristics as:" 
+    : "Purpose2 not founded";
+}
+
+if(Purpose1 === "Provide_transport_in_rural_areas"){
+  document.getElementById("Purpose1").innerHTML = Purpose1 !== null
+    ? "Considering the Purpose 1: <b>Provide Transport in Rural Areas</b>, along with previous DRT experiences, APOLO classifies the following characteristics as:" 
+    : "Purpose1 not founded";
+}
+
+if(Purpose2 === "Provide_transport_in_rural_areas"){
+  document.getElementById("Purpose2").innerHTML = Purpose1 !== null
+    ? "Considering the Purpose 2: <b>Provide Transport in Rural Areas</b>, along with previous DRT experiences, APOLO classifies the following characteristics as:" 
+    : "Purpose2 not founded";
+}
+
+
+
+  // Exibir os valores no HTML
+
+
+  // Converter valores para números (a e b) e sinal (+/-)
+  const pm = pmRaw === "-" ? -1 : 1;
+  const a = parseFloat(aRaw);
+  const b1 = parseFloat(b1Raw);
+  const b2 = parseFloat(b2Raw);
+
+  // Função que calcula P′
+  function calcularPAjustado(P, a, b, pm, c = 1) {
+    const ajuste = (a * b) / 100;
+    const base = 1 + pm * ajuste;
+    const expoente = Math.sqrt(c);
+    return P * Math.pow(base, expoente);
+  }
+
+  // Calculo P' para Purpose 1
+
+  if (Purpose1 === "reduce_operational_cost") {
+      const P1 = 7
+      const P2 = 3
+
+        // Só calcular se valores forem válidos
+
+    const previa1 = calcularPAjustado(P1, a, b1, pm);
+    const previa2 = calcularPAjustado(P2, a, b2, pm);
+
+    const total = previa1+previa2
+
+    const resultado1 = previa1/total
+    const resultado2 = previa2/total
+
+if (resultado1 > 0.66) {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Highly Suitable</b>";
+} else if (resultado1 > 0.33) {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Marginally Suitable</b>";
+}
+
+if (resultado2 > 0.66) {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Highly Suitable</b>";
+} else if (resultado2 > 0.33) {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Marginally Suitable</b>";
+}
+
+
+
+    //document.getElementById("resultado1").innerText = "P1′ = " + resultado1.toFixed(2);
+    //document.getElementById("resultado2").innerText = "P2′ = " + resultado2.toFixed(2);
+    //document.getElementById("resultado3").innerText = "P3′ = " + resultado3.toFixed(2);
+
+    
+  }
+
+  if (Purpose1 === "be_mobility_alternative") {
+      const P1 = 7
+      const P2 = 5
+
+        // Só calcular se valores forem válidos
+
+    const previa1 = calcularPAjustado(P1, a, b1, pm);
+    const previa2 = calcularPAjustado(P2, a, b2, pm);
+
+    const total = previa1+previa2
+
+    const resultado1 = previa1/total
+    const resultado2 = previa2/total
+
+if (resultado1 > 0.66) {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Highly Suitable</b>";
+} else if (resultado1 > 0.33) {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Marginally Suitable</b>";
+}
+
+if (resultado2 > 0.66) {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Highly Suitable</b>";
+} else if (resultado2 > 0.33) {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Marginally Suitable</b>";
+}
+
+
+    //document.getElementById("resultado1").innerText = "P1′ = " + resultado1.toFixed(2);
+    //document.getElementById("resultado2").innerText = "P2′ = " + resultado2.toFixed(2);
+    //document.getElementById("resultado3").innerText = "P3′ = " + resultado3.toFixed(2);
+  }
+
+  if (Purpose1 === "serve_population_in_need") {
+      const P1 = 2
+      const P2 = 12
+
+        // Só calcular se valores forem válidos
+
+    const previa1 = calcularPAjustado(P1, a, b1, pm);
+    const previa2 = calcularPAjustado(P2, a, b2, pm);
+
+    const total = previa1+previa2
+
+    const resultado1 = previa1/total
+    const resultado2 = previa2/total
+
+if (resultado1 > 0.66) {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Highly Suitable</b>";
+} else if (resultado1 > 0.33) {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Marginally Suitable</b>";
+}
+
+if (resultado2 > 0.66) {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Highly Suitable</b>";
+} else if (resultado2 > 0.33) {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Marginally Suitable</b>";
+}
+
+
+    //document.getElementById("resultado1").innerText = "P1′ = " + resultado1.toFixed(2);
+    //document.getElementById("resultado2").innerText = "P2′ = " + resultado2.toFixed(2);
+    //document.getElementById("resultado3").innerText = "P3′ = " + resultado3.toFixed(2);
+  }
+
+  if (Purpose1 === "Feed_other_transportation_systems") {
+      const P1 = 6
+      const P2 = 6
+
+        // Só calcular se valores forem válidos
+
+    const previa1 = calcularPAjustado(P1, a, b1, pm);
+    const previa2 = calcularPAjustado(P2, a, b2, pm);
+
+    const total = previa1+previa2
+
+    const resultado1 = previa1/total
+    const resultado2 = previa2/total
+
+if (resultado1 > 0.66) {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Highly Suitable</b>";
+} else if (resultado1 > 0.33) {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Marginally Suitable</b>";
+}
+
+if (resultado2 > 0.66) {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Highly Suitable</b>";
+} else if (resultado2 > 0.33) {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Marginally Suitable</b>";
+}
+
+
+    //document.getElementById("resultado1").innerText = "P1′ = " + resultado1.toFixed(2);
+    //document.getElementById("resultado2").innerText = "P2′ = " + resultado2.toFixed(2);
+    //document.getElementById("resultado3").innerText = "P3′ = " + resultado3.toFixed(2);
+  }
+
+  if (Purpose1 === "Complement_existing_PT_gaps") {
+      const P1 = 6
+      const P2 = 13
+
+        // Só calcular se valores forem válidos
+
+    const previa1 = calcularPAjustado(P1, a, b1, pm);
+    const previa2 = calcularPAjustado(P2, a, b2, pm);
+
+    const total = previa1+previa2
+
+    const resultado1 = previa1/total
+    const resultado2 = previa2/total
+
+ if (resultado1 > 0.66) {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Highly Suitable</b>";
+} else if (resultado1 > 0.33) {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Marginally Suitable</b>";
+}
+
+if (resultado2 > 0.66) {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Highly Suitable</b>";
+} else if (resultado2 > 0.33) {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Marginally Suitable</b>";
+}
+
+
+    //document.getElementById("resultado1").innerText = "P1′ = " + resultado1.toFixed(2);
+    //document.getElementById("resultado2").innerText = "P2′ = " + resultado2.toFixed(2);
+    //document.getElementById("resultado3").innerText = "P3′ = " + resultado3.toFixed(2);
+  }
+
+  if (Purpose1 === "Provide_transport_in_rural_areas") {
+      const P1 = 1
+      const P2 = 9
+
+        // Só calcular se valores forem válidos
+
+    const previa1 = calcularPAjustado(P1, a, b1, pm);
+    const previa2 = calcularPAjustado(P2, a, b2, pm);
+
+    const total = previa1+previa2
+
+    const resultado1 = previa1/total
+    const resultado2 = previa2/total
+
+if (resultado1 > 0.66) {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Highly Suitable</b>";
+} else if (resultado1 > 0.33) {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado1").innerHTML = "At the Spot is <b>Marginally Suitable</b>";
+}
+
+if (resultado2 > 0.66) {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Highly Suitable</b>";
+} else if (resultado2 > 0.33) {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado2").innerHTML = "A Prior is <b>Marginally Suitable</b>";
+}
+
+
+    //document.getElementById("resultado1").innerText = "P1′ = " + resultado1.toFixed(2);
+    //document.getElementById("resultado2").innerText = "P2′ = " + resultado2.toFixed(2);
+    //document.getElementById("resultado3").innerText = "P3′ = " + resultado3.toFixed(2);
+  }
+
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  //Calculo P' para Purpose2
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
+  if (Purpose2 === "reduce_operational_cost") {
+      const P1 = 7
+      const P2 = 3
+
+        // Só calcular se valores forem válidos
+
+    const previa4 = calcularPAjustado(P1, a, b1, pm);
+    const previa5 = calcularPAjustado(P2, a, b2, pm);
+
+    const total = previa4+previa5
+
+    const resultado4 = previa4/total
+    const resultado5 = previa5/total
+
+if (resultado4 > 0.66) {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Highly Suitable</b>";
+} else if (resultado4 > 0.33) {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Marginally Suitable</b>";
+}
+
+if (resultado5 > 0.66) {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Highly Suitable</b>";
+} else if (resultado5 > 0.33) {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Marginally Suitable</b>";
+}
+
+
+    //document.getElementById("resultado4").innerText = "P1′ = " + resultado1.toFixed(2);
+    //document.getElementById("resultado5").innerText = "P2′ = " + resultado2.toFixed(2);
+    //document.getElementById("resultado6").innerText = "P3′ = " + resultado3.toFixed(2);
+  }
+
+  if (Purpose2 === "be_mobility_alternative") {
+      const P1 = 7
+      const P2 = 5
+
+        // Só calcular se valores forem válidos
+
+    const previa4 = calcularPAjustado(P1, a, b1, pm);
+    const previa5 = calcularPAjustado(P2, a, b2, pm);
+
+    const total = previa4+previa5
+
+    const resultado4 = previa4/total
+    const resultado5 = previa5/total
+
+if (resultado4 > 0.66) {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Highly Suitable</b>";
+} else if (resultado4 > 0.33) {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Marginally Suitable</b>";
+}
+
+if (resultado5 > 0.66) {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Highly Suitable</b>";
+} else if (resultado5 > 0.33) {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Marginally Suitable</b>";
+}
+
+
+    //document.getElementById("resultado4").innerText = "P1′ = " + resultado1.toFixed(2);
+    //document.getElementById("resultado5").innerText = "P2′ = " + resultado2.toFixed(2);
+    //document.getElementById("resultado6").innerText = "P3′ = " + resultado3.toFixed(2);
+  }
+
+  if (Purpose2 === "serve_population_in_need") {
+      const P1 = 2
+      const P2 = 12
+
+        // Só calcular se valores forem válidos
+
+    const previa4 = calcularPAjustado(P1, a, b1, pm);
+    const previa5 = calcularPAjustado(P2, a, b2, pm);
+
+    const total = previa4+previa5
+
+    const resultado4 = previa4/total
+    const resultado5 = previa5/total
+
+ if (resultado4 > 0.66) {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Highly Suitable</b>";
+} else if (resultado4 > 0.33) {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Marginally Suitable</b>";
+}
+
+if (resultado5 > 0.66) {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Highly Suitable</b>";
+} else if (resultado5 > 0.33) {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Marginally Suitable</b>";
+}
+
+
+    //document.getElementById("resultado4").innerText = "P1′ = " + resultado1.toFixed(2);
+    //document.getElementById("resultado5").innerText = "P2′ = " + resultado2.toFixed(2);
+    //document.getElementById("resultado6").innerText = "P3′ = " + resultado3.toFixed(2);
+  }
+
+  if (Purpose2 === "Feed_other_transportation_systems") {
+      const P1 = 6
+      const P2 = 6
+
+        // Só calcular se valores forem válidos
+
+    const previa4 = calcularPAjustado(P1, a, b1, pm);
+    const previa5 = calcularPAjustado(P2, a, b2, pm);
+
+    const total = previa4+previa5
+
+    const resultado4 = previa4/total
+    const resultado5 = previa5/total
+
+if (resultado4 > 0.66) {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Highly Suitable</b>";
+} else if (resultado4 > 0.33) {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Marginally Suitable</b>";
+}
+
+if (resultado5 > 0.66) {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Highly Suitable</b>";
+} else if (resultado5 > 0.33) {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Marginally Suitable</b>";
+}
+
+
+    //document.getElementById("resultado4").innerText = "P1′ = " + resultado1.toFixed(2);
+    //document.getElementById("resultado5").innerText = "P2′ = " + resultado2.toFixed(2);
+    //document.getElementById("resultado6").innerText = "P3′ = " + resultado3.toFixed(2);
+  }
+
+  if (Purpose2 === "Complement_existing_PT_gaps") {
+      const P1 = 6
+      const P2 = 13
+
+        // Só calcular se valores forem válidos
+
+    const previa4 = calcularPAjustado(P1, a, b1, pm);
+    const previa5 = calcularPAjustado(P2, a, b2, pm);
+
+    const total = previa4+previa5
+
+    const resultado4 = previa4/total
+    const resultado5 = previa5/total
+
+if (resultado4 > 0.66) {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Highly Suitable</b>";
+} else if (resultado4 > 0.33) {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Marginally Suitable</b>";
+}
+
+if (resultado5 > 0.66) {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Highly Suitable</b>";
+} else if (resultado5 > 0.33) {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Marginally Suitable</b>";
+}
+
+
+    //document.getElementById("resultado4").innerText = "P1′ = " + resultado1.toFixed(2);
+    //document.getElementById("resultado5").innerText = "P2′ = " + resultado2.toFixed(2);
+    //document.getElementById("resultado6").innerText = "P3′ = " + resultado3.toFixed(2);
+  }
+
+  if (Purpose2 === "Provide_transport_in_rural_areas") {
+      const P1 = 1
+      const P2 = 9
+
+        // Só calcular se valores forem válidos
+
+    const previa4 = calcularPAjustado(P1, a, b1, pm);
+    const previa5 = calcularPAjustado(P2, a, b2, pm);
+
+    const total = previa4+previa5
+
+    const resultado4 = previa4/total
+    const resultado5 = previa5/total
+
+if (resultado4 > 0.66) {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Highly Suitable</b>";
+} else if (resultado4 > 0.33) {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado4").innerHTML = "At the Spot is <b>Marginally Suitable</b>";
+}
+
+if (resultado5 > 0.66) {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Highly Suitable</b>";
+} else if (resultado5 > 0.33) {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Suitable</b>";
+} else {
+  document.getElementById("resultado5").innerHTML = "A Prior is <b>Marginally Suitable</b>";
+}
+
+
+    //document.getElementById("resultado4").innerText = "P1′ = " + resultado1.toFixed(2);
+    //document.getElementById("resultado5").innerText = "P2′ = " + resultado2.toFixed(2);
+    //document.getElementById("resultado6").innerText = "P3′ = " + resultado3.toFixed(2);
+  }
+
+</script>
+
+<script>
+  function saveSelections() {
+    const Selected_Booking = document.getElementById("Selected_Booking").value;
+
+    if (
+        Selected_Booking
+      ) {
+      localStorage.setItem('Selected_Booking', Selected_Booking);
+      window.location.href = '8_MUSE_4.html';
+    } else {
+      alert("Missing items!");
+    }
+  }
+</script>
+
+</body>
+
+</html>

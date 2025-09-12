@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APOLO - More Information</title>
+  <style>
+    body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .flow-image {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 30px;
+    }
+
+    .purposes {
+      text-align: justify;
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      background-color: #ffffffaa;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .selection {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    select {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      background-color: #f9f9f9;
+      width: 100%;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .next-button,
+    .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    .next-button:hover,
+    .back-button:hover {
+      background-color: #90c7e6;
+    }
+
+    @media (max-width: 768px) {
+      .purposes {
+        font-size: 14px;
+        padding: 15px;
+      }
+
+      select {
+        font-size: 14px;
+        padding: 8px;
+      }
+
+      .buttons {
+        flex-direction: column;
+      }
+
+      .next-button,
+      .back-button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Fluxogram as Image -->
+    <img src="Start.png" alt="Start Flow" class="flow-image">
+
+    <!-- Purposes Text -->
+    <div class="purposes">
+      <h2>APOLO</h2>
+      <p>
+        Demand-responsive transport (DRT) covers transport systems that combine elements of public transport and taxi services. Like taxis, DRT can adjust routes, stops, and schedules based on user needs, while still offering shared rides like traditional public transport.
+      </p>
+      <p>
+        DRT has been used for over 40 years and is a good alternative where demand is low or spread out. Its main strength is flexibility—adapting quickly to demand through changes in routes, fleet size, stop locations, and schedules.
+      </p>
+      <p>
+        However, this flexibility also makes DRT systems complex to design, especially for those without technical expertise. Poor design can lead to inefficient services that don’t meet user needs.
+      </p>
+      <p>
+        Although many planning methods exist, they often focus on only one part of the design and don’t provide a complete view. There is a need for a method that considers service goals, local context, user needs, flexibility levels, and operational limits all at once.
+      </p>
+      <p>
+        To address this, the APOLO framework was developed. It helps design efficient DRT systems—especially for low-density areas—by guiding decision-makers through an iterative process. APOLO uses real-world examples and factors like purpose, location, users, and service hours to find the best system setup for both users and operators.
+      </p> 
+     <p>
+        APOLO is a question-centered sequence of elements that, through the analysis and manipulation of user’s inputs, will provide an output, which is a feasible answer for the question: “Based on the inputs provided by the user, and at a strategic decision-making level, which is the most effective and efficient configuration for a DRT?” In simplified terms, through with the user providing data regarding the service's purpose, its target audience, and the area where the service will operate, the framework applies its three tool modules that, in conjunction with user input, will help identify an appropriate configuration for the system's operation.
+         </p>
+
+ <p>
+The first step in developing APOLO was to understand what designing a DRT entails. More specifically, it involved identifying the building blocks necessary to construct its configuration. Through the analysis of various systems, we identified that these are the elements shaping the way DRT systems operate, which will be treated as variables. Each variable represents how the system governs a specific aspect of its operation. 
+</p>
+      <p>
+     
+     This challenge of listing and describing these variables was tackled by analysing the literature available on DRTs together with a careful analysis of a set of 52 real-world DRTs, with different configurations, operational stages, and objectives. These DRT systems operate in 24 different countries, with 21 in rural and peri-urban areas, 11 in urban areas, and 20 operating across multiple areas. At the time of data collection, 35 systems remained operational, while 17 had either concluded or suspended their operations. 
+</p>
+      <p>
+Through this broad analysis, it was possible to identify and categorize the variables typically associated with the configuration of DRT systems. In this categorization, a series of variables were distinguished, with subsequent values and parameters, that shape how a DRT will be designed and operated, and how it will provide this service to the passengers. These variables were divided into three main groups: Directives, Operations, and Service, which will be explained below. Figure 3.1 presents the interaction and relation between these variables.
+</p>
+<ul>
+<li class="underline">Directive Variables:</li> The directives variables group encompasses the reasons behind the design and implementation of the system. These are high-level decisions made by government authorities who recognize the need for a DRT system to operate in the service area, to complement, replace the existing network, or be a brand-new service.
+<li class="underline">Operations Variables:</li> The operation variables group outlines guidelines for the day-to-day functioning of the system. These characteristics are crucial for operators who, through analysis and negotiation with governmental bodies, select the domains that will shape the overall operation. These variables have a huge impact on defining how flexible a DRT is, which may be translated into how fast this service can adapt to changes in demand.
+<li class="underline">Service Variables:</li> The service variables group encompasses elements that describe the relationship between the target passengers and the DRT. These variables reflect how passengers interact with the system, and the suitability of the domains related to passenger expectations is decisive for the service’s success.
+</ul>    
+        <p>
+APOLO was compartmentalized due to the diverse nature of DRT features and the tasks involved in selecting these features. This approach ensures adaptability and precision in addressing each aspect of the system's design.
+Given the different nature of the variables that will form the configuration of the DRTs, and to ensure adaptability and precision in addressing each aspect of the system's design, the framework was divided into three main modules:
+        </p>
+<ul>
+<li class="underline">MUSE:</li> This module is designed to support the selection of features related to Operation Variables values. Combining the decision-makers’ inputs on Directive Variables, the user’s perspective on flexibility, and a collection of knowledge regarding previous DRT experiences, this module informs, for each Operations Variable value, how suitable it is to the DRT in development.
+
+
+<li class="underline">ARTEMIS:</li> This module applies a simulation in a virtual scenario to understand how effective the selected values for the Operations Variables are. Based on the system's functionality, this module generates Key Performance Indicators (KPIs) to facilitate the evaluation of the operation according to the proposed configuration.
+
+<li class="underline">DELOS:</li> This module supports the selection of values in the Service Variables groups. The values for each variable are analyzed through a cost/benefit analysis to understand which alternative(s) are suitable for the DRT.
+</ul>  
+
+    </div>
+
+    <!-- Buttons -->
+    <div class="buttons">
+      <button class="next-button" onclick="window.location.href='index.html'">BACK</button> 
+      <button class="next-button" onclick="window.location.href='01_Decision_Variables.html'">START</button>
+    </div>
+  </div>
+
+</body>
+</html>

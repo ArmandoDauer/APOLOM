@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>APOLO - DELOS Module</title>
+  <style>
+    body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      padding-top: 140px; /* match 8_MUSE_1 */
+      box-sizing: border-box;
+    }
+    .content {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .flow-image {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto 30px auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f8ff;
+      text-align: center;
+    }
+    select {
+      padding: 6px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      background-color: #f9f9f9;
+    }
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      padding: 20px;
+    }
+    .next-button,
+    .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 12px 22px;
+      font-size: 16px;
+      flex: 0 0 auto;
+      min-width: 140px;
+    }
+    .next-button:hover,
+    .back-button:hover {
+      background-color: #90c7e6;
+    }
+    h1 { text-align: center; }
+    @media (max-width: 600px) {
+      .buttons { gap: 12px; justify-content: center; }
+      .next-button, .back-button { min-width: 120px; padding: 10px 16px; font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="content">
+    <img src="DELOS.png" alt="Start Flow" class="flow-image">
+  </div>
+
+  <div class="content">
+    <h1>Frequency of the System Evaluation</h1>
+    <p>Classify the following circumstances regarding the frequency of the system</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Circumstance</th>
+          <th>Pro/Con evaluations</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="buttons">
+    <button class="back-button" onclick="window.location.href='DELOS_4.html'">BACK</button>
+    <button class="next-button" onclick="calculateSums()">NEXT</button>
+  </div>
+
+<script>
+  const rows = [
+    "Vehicles run only when there is demand, reducing fuel, driver hours, and maintenance costs.",
+    "Adapts easily to fluctuating demand patterns (rush hours vs. low demand periods).",
+    "Users know exactly when the service runs, improving trust and planning.",
+    "There is no need for apps or digital tools — information can be shared publicly.",
+    "At least some trips are guaranteed to be always available.",
+    "The service for people who may not have the ability to request in advance is ensured.",
+    "Some scheduled trips may run empty or with very few passengers.",
+    "Users may still face gaps in service between the minimum trips."
+  ];
+
+  const options = `
+    <option value="3">Strongly Pro</option>
+    <option value="1">Slightly Pro</option>
+    <option value="0" selected>Neutral</option>
+    <option value="-1">Slightly Con</option>
+    <option value="-3">Strongly Con</option>
+  `;
+
+  const tableBody = document.getElementById("tableBody");
+  rows.forEach((label, idx) => {
+    tableBody.innerHTML += `
+      <tr>
+        <td>${label}</td>
+        <td><select id="row_${idx}">${options}</select></td>
+      </tr>
+    `;
+  });
+
+  // Ensure default selection is Neutral
+  rows.forEach((_, idx) => {
+    const sel = document.getElementById(`row_${idx}`);
+    if (sel) sel.value = "0";
+  });
+
+  function calculateSums() {
+    let sum = { When_Requested: 0, Minimum_Number_of_Trips: 0, Established_Timetable: 0 };
+    const values = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const val = parseInt(document.getElementById(`row_${i}`).value);
+      if (isNaN(val)) {
+        alert("Please classify all items before continuing.");
+        return;
+      }
+      values.push(val);
+    }
+
+    // Manual assignment
+    sum.When_Requested += values[0];
+    sum.Established_Timetable -= values[0];
+
+    sum.When_Requested += values[1];
+    sum.Established_Timetable -= values[1];
+
+    sum.When_Requested -= values[2];
+    sum.Established_Timetable += values[2];
+
+    sum.When_Requested -= values[3];
+    sum.Established_Timetable += values[3];
+
+    sum.Minimum_Number_of_Trips += values[4];
+    sum.Minimum_Number_of_Trips += values[5];
+    sum.Minimum_Number_of_Trips += values[6];
+    sum.Minimum_Number_of_Trips += values[7];
+
+    // Save using the keys expected by DELOS_7_1
+    localStorage.setItem("Sum_Only_Request", String(sum.When_Requested));
+    localStorage.setItem("Sum_Minimum_Number", String(sum.Minimum_Number_of_Trips));
+    localStorage.setItem("Sum_Timetable", String(sum.Established_Timetable));
+
+    window.location.href = 'DELOS_5.html';
+  }
+</script>
+
+</body>
+</html>

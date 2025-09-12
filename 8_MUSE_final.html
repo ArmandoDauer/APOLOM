@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>APOLO - MUSE Module</title>
+  <style>
+    body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      padding-top: 140px;
+    }
+
+    .flow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: #e5eff5;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 10px;
+      justify-content: center;
+      z-index: 1000;
+      flex-wrap: wrap;
+    }
+
+    .step, .step-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .step {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #1e90ff;
+      color: white;
+    }
+
+    .step.active {
+      background-color: #87cefa;
+      color: black;
+    }
+
+    .step-label {
+      position: absolute;
+      top: 60px;
+      font-size: 12px;
+      width: 80px;
+      text-align: center;
+    }
+
+    .step-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .arrow {
+      width: 30px;
+      height: 5px;
+      background-color: #a0a0a0;
+    }
+
+    .triangle-start, .triangle-end {
+      width: 0;
+      height: 0;
+      border-top: 25px solid transparent;
+      border-bottom: 25px solid transparent;
+    }
+
+    .triangle-start {
+      border-left: 40px solid #1e90ff;
+    }
+
+    .triangle-end {
+      border-right: 40px solid #1e90ff;
+    }
+
+    .triangle-start.active {
+      border-left-color: #87cefa;
+    }
+
+    .triangle-end.active {
+      border-right-color: #87cefa;
+    }
+
+    .content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #ffffffaa;
+      border-radius: 8px;
+    }
+
+    .center-figure {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .selection {
+      background-color: #f0f8ff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+
+    .flow-image {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+    }
+      
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .next-button,
+    .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    .next-button:hover,
+    .back-button:hover {
+      background-color: #90c7e6;
+    }
+
+    /* Mapa interativo (mesma altura do arquivo anterior) */
+    #map {
+      width: 100%;
+      height: 250px;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+  </style>
+
+  <!-- Leaflet (igual ao arquivo anterior) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+  <!-- Conteúdo principal -->
+<div class="center-figure">
+    <img src="MUSE.png" alt="Start Flow" class="flow-image">
+</div>
+
+     <div class="content">
+     <h1>DRT Configuration</h1>
+     </div>
+    
+  <div class="content">
+    <h2>Directive Variables</h2>
+    <div class="selection" id="selection-Purpose_1"></div>
+    <div class="selection" id="selection-Purpose_2"></div>
+    <div class="selection" id="selection-Target_passenger"></div>
+    <div class="selection" id="selection-Service_Hour_1"></div>
+
+    <!-- Substituição: sai o texto de coordenadas, entra o mapa interativo -->
+    <h3>Service Area:</h3>
+    <div id="map"></div>
+  </div>
+
+  <div class="content">
+    <h2>Operational Variables</h2>
+    <div class="selection" id="selection-Selected_Pick_up_and_Drop_off"></div>
+    <div class="selection" id="selection-Selected_Vehicle_Route"></div>
+    <div class="selection" id="selection-Selected_Booking"></div>
+    <div class="selection" id="selection-Selected_Time_Window"></div>
+  </div>
+
+  <div class="content" style="margin-top: -50px;">
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fleet Configuration: </p>
+    <div class="selection">
+      <table id="fleetSummaryTable" style="width:100%; border-collapse: collapse; text-align: center;">
+        <thead>
+          <tr style="background-color: #d0e7f9;">
+            <th style="padding: 8px; border: 1px solid #ccc;">Vehicle Type</th>
+            <th style="padding: 8px; border: 1px solid #ccc;">Fleet Size</th>
+            <th style="padding: 8px; border: 1px solid #ccc;">Capacity</th>
+            <th style="padding: 8px; border: 1px solid #ccc;">Emissions (g/km)</th>
+            <th style="padding: 8px; border: 1px solid #ccc;">Speed (km/h)</th>
+          </tr>
+        </thead>
+        <tbody id="fleetSummaryBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // --- Mapeamentos existentes ---
+    const Purpose_1Map = {
+      "reduce_operational_cost": "Reduce operational costs/Reduce pollution : The DRT system will serve as a substitute for an existing system that has been proven economically inefficient. These scenarios usually happen when there isn’t enough demand to sustain a regular service, either due to the population distribution or due to the low-demand operation hours. Also, minimize the carbon footprint of the overall transport in the area. It may be related to reduce the number of private transports in favour for the use of a public alternative (the DRT) or eliminating the inefficiencies of an existing PT that lead to excessive pollution.",
+      "be_mobility_alternative": "Be a mobility alternative: In an area which relies heavily on existing public transport or private transport. Therefore, this new system will serve as an alternative transportation option. As an example, it may focus on reducing the use of private vehicles by offering a premium public transportation, with increased comfort, costing a little more than the conventional transport, but at a fraction of the cost of a private transport.",
+      "serve_population_in_need": "Serve the population in need: DRT systems ensure accessibility where traditional public transport falls short, catering to groups like seniors, people with disabilities, and those in remote areas. Their flexible, on-demand services enhance mobility options and promote community inclusivity.",
+      "Feed_other_transportation_systems": "Feed other transportation systems: The system will serve to provide access for larger transportation systems, such as airports, ports, train and bus stations. It makes a bridge between passengers’ home (or close passengers gathering locations) and these mass transportation systems.",
+      "Complement_existing_PT_gaps": "Complement existing PT gaps: In these cases, the existing PT cannot cover all passenger needs. Therefore, an additional system is required to serve the demand that cannot be served by the existing service.",
+      "Provide_transport_in_rural_areas": "Provide transport in rural areas: DRT systems bridge gaps in rural transit by offering tailored routes and schedules. This improves access to essential services, jobs, and regional connections, reducing reliance on private vehicles and fostering sustainable community development"
+    };
+    const Purpose_2Map = Purpose_1Map;
+
+    const Target_passengerMap = {
+      "general_passengers": "General Passengers: The whole population is considered as potential passengers of the system. There will be no design concession for favoring a specific group.",
+      "population_in_need": "Population in Need: This population typically includes individuals with physical impairments who often lack access to other transportation options. The most common trip purposes for this group are medical appointments, shopping, and leisure activities. This demographic generally places a higher value on comfort (such as door-to-door and direct service) rather than strict punctuality (e.g. low-income, impaired, elderly).",
+      "time_sensitive_passengers": "Time Sensitive Passengers: Typically composed of younger and economically active individuals, this population often uses transport for work and school-related activities. Since these activities are usually time-sensitive, this demographic tends to prioritize punctuality over comfort (e.g. youth in scholar age or working population)."
+    };
+
+    const Service_Hour_1Map = {
+      "conventional_business_hour": "Conventional Transport Business Hours: The DRT operates during the same hours as a conventional public transport system. Typically, DRTs functioning under this scheme in regions where a traditional system already exists aim to complement the traditional system's operation, either by serving areas or passengers that cannot be efficiently accommodated or by improving access to the existing system.",
+      "off_peak_only": "Off-peak hours only: In this case, the DRT operates only during off-peak hours, when demand is lower and potentially insufficient for a traditional system to operate efficiently. DRTs operating during these hours can either supplement the existing transport system or entirely replace it.",
+      "peak_hours_only": "Peak hours only: DRTs operating exclusively during peak hours can help address excess demand that a regular system cannot handle, either by increasing the supply of vehicles and routes or by providing access to high-capacity transport modes. Additionally, in scenarios where these DRTs operate independently, peak hours may be the only viable timeframe for their operation.",
+      "specific_time_window": "Specific time window: The system operates at specific time periods, that may or not be regular. The definition of these operation periods is influenced by the demand, availability of resources, offer of other transportation options, etc.",
+      "night_services": "Night Services: During nighttime periods, demand is generally very low. As a result, regular transport services often struggle to implement a viable operation, frequently reducing service frequency or, in more extreme cases, ceasing operations entirely. Due to the low demand, DRT operations become a feasible solution for continuing to meet existing mobility needs."
+    };
+
+    const Selected_Pick_up_and_Drop_offMap = {
+      "specific_request_poit": "Specific Request Point: Passengers are picked up and dropped off at the exact origin and destination of their trip. Among the possible values in this variable, it offers the highest level of flexibility. This type of journey is highly customizable, enhancing passenger comfort and potentially improving system accessibility for certain population groups. However, it also presents challenges related to planning, efficiency, and the impact on time and distance for other trip requests.",
+    "close_to_the_request_point": "Close to the Request Point: Passengers are picked up and dropped off near their trip’s origin and destination but not at a fixed pre-determined point. Allowing passengers to walk tens (or sometimes hundreds) of meters from their origin enables pickups or drop-offs near arterial roads and avenues, facilitating more time- and cost-efficient routes. Although this option requires additional effort from passengers, it can be seen as a middle ground between the other two values.",
+    "existing_mapped_point": "Existing Mapped Point: The system operates with fixed pickup and drop-off points. These locations can be either physical or virtual, and, in the case of physical points, they may or may not be marked. This setup provides a certain level of predictability for both operators and passengers in terms of routing. However, it may reduce accessibility for mobility-impaired groups due to the need to travel to and from these points, which can be located far from their trip origins and destinations.",
+    "specific_request_poit_and_close_to_the_request_point": "Specific Request Point & Close to the Request Point: Passengers are picked up and dropped off at the exact origin and destination of their trip. Among the possible values in this variable, it offers the highest level of flexibility. This type of journey is highly customizable, enhancing passenger comfort and potentially improving system accessibility for certain population groups. However, it also presents challenges related to planning, efficiency, and the impact on time and distance for other trip requests. Also, Passengers are picked up and dropped off near their trip’s origin and destination but not at a fixed pre-determined point. Allowing passengers to walk tens (or sometimes hundreds) of meters from their origin enables pickups or drop-offs near arterial roads and avenues, facilitating more time- and cost-efficient routes. Although this option requires additional effort from passengers, it can be seen as a middle ground between the other two values.",
+    "specific_request_poit_and_existing_mapped_point": "Specific Request Point & Existing Mapped Point: Passengers are picked up and dropped off at the exact origin and destination of their trip. Among the possible values in this variable, it offers the highest level of flexibility. This type of journey is highly customizable, enhancing passenger comfort and potentially improving system accessibility for certain population groups. However, it also presents challenges related to planning, efficiency, and the impact on time and distance for other trip requests. Also, the system operates with fixed pickup and drop-off points. These locations can be either physical or virtual, and, in the case of physical points, they may or may not be marked. This setup provides a certain level of predictability for both operators and passengers in terms of routing. However, it may reduce accessibility for mobility-impaired groups due to the need to travel to and from these points, which can be located far from their trip origins and destinations.",
+    "existing_mapped_point_and_close_to_the_request_point": "Existing Mapped Point & Close to the Request Point: The system operates with fixed pickup and drop-off points. These locations can be either physical or virtual, and, in the case of physical points, they may or may not be marked. This setup provides a certain level of predictability for both operators and passengers in terms of routing. However, it may reduce accessibility for mobility-impaired groups due to the need to travel to and from these points, which can be located far from their trip origins and destinations. Also, passengers are picked up and dropped off near their trip’s origin and destination but not at a fixed pre-determined point. Allowing passengers to walk tens (or sometimes hundreds) of meters from their origin enables pickups or drop-offs near arterial roads and avenues, facilitating more time- and cost-efficient routes. Although this option requires additional effort from passengers, it can be seen as a middle ground between the other two values."
+    };
+
+    const Selected_Vehicle_RouteMap = {
+    "free_floating": "Free Floating Between Stops: There is no predefined route for the vehicle. The route is calculated dynamically based on demand, adjusting to each set of trip requests. In this scenario, efficiency is emphasized, as the vehicle operates only in areas where it has been requested. However, this approach requires significant computational effort for each new route calculation. The complexity of route computation increases substantially as the number of trips grows.",
+    "fixed_with_deviations": "Fixed Route With Deviations: A fixed route is established, which the vehicle must follow. However, minor deviations (usually within a predefined time/distance limit) are allowed to accommodate specific passenger requests. These diversions enable the service to assist passengers with special needs or reduced mobility while still offering a degree of operational predictability for passengers and operators. Nevertheless, there remains a risk of low vehicle occupancy in low-demand areas.",
+    "fixed_route": "Fixed Route: Vehicles follow a predetermined and unalterable route. This operation methodology provides passengers and operators with a predictable system operation. However, it increases the risk of vehicles operating in scenarios where the system is not requested, potentially reducing overall efficiency.",
+    };
+
+    const Selected_BookingMap = {
+    "At_the_spot": "At the Spot:  No advance scheduling is required for a trip; requests are fulfilled instantly, with the waiting time depending on the vehicle's travel to the pick-up location. This is the most flexible feature, as the system quickly adapts to the presented demand. It is primarily applied when the DRT system is proposed as an alternative to private vehicles, offering a similar level of comfort and responsiveness to individual transportation.",
+    "A_prior": "A Prior: Trips must be requested in advance, with the lead time varying according to the system’s purpose. The longer the advance notice, the more time operators have to plan and optimize routes and resource allocation. However, increasing the required notice period may alter passengers' perception of the system, as it cannot accommodate unforeseen travel needs.",
+    "At_the_spot_and_A_prior": "At the Spot and A Prior: The system combines both options, allowing passengers to request rides instantly or schedule them in advance. This hybrid approach balances flexibility and operational efficiency, as it can accommodate spontaneous trips while also benefiting from planned requests that support better route optimization and resource management. It is often applied in contexts where demand is heterogeneous, such as mixed urban and suburban areas, ensuring that the service remains attractive for users with different travel behaviors and expectations.",
+
+    };
+
+    const Selected_Time_WindowMap = {
+      "TW_5": "5-minute Time Window: The actual passenger's pick-up time can be advanced or delayed by up to 5 minutes to optimize the vehicle route.",
+      "TW_10": "10-minute Time Window: The actual passenger's pick-up time can be advanced or delayed by up to 10 minutes to optimize the vehicle route.",
+      "TW_15": "15-minute Time Window: The actual passenger's pick-up time can be advanced or delayed by up to 15 minutes to optimize the vehicle route."
+    };
+
+    const Purpose_1 = localStorage.getItem('Purpose_1');
+    const Purpose_2 = localStorage.getItem('Purpose_2');
+    const Target_passenger = localStorage.getItem('Target_passenger');
+    const Service_Hour_1 = localStorage.getItem('Service_Hour_1');
+
+    const Selected_Pick_up_and_Drop_off = localStorage.getItem('Selected_Pick_up_and_Drop_off');
+    const Selected_Vehicle_Route = localStorage.getItem('Selected_Vehicle_Route');
+    const Selected_Booking = localStorage.getItem('Selected_Booking');
+    const Selected_Time_Window = localStorage.getItem('Selected_Time_Window');
+
+    document.getElementById('selection-Purpose_1').innerText =
+      "Purpose 1 - " + (Purpose_1Map[Purpose_1] || "Não selecionado");
+
+    document.getElementById('selection-Purpose_2').innerText =
+      "Purpose 2: - " + (Purpose_2Map[Purpose_2] || "Não selecionado");
+
+    document.getElementById('selection-Target_passenger').innerText =
+      "Target Passengers - " + (Target_passengerMap[Target_passenger] || "Não selecionado");
+
+    document.getElementById('selection-Service_Hour_1').innerText =
+      "Service Hours - " + (Service_Hour_1Map[Service_Hour_1] || "Não selecionado");
+
+    document.getElementById('selection-Selected_Pick_up_and_Drop_off').innerText =
+      "Pick-up and Drop-off Methodology - " + (Selected_Pick_up_and_Drop_offMap[Selected_Pick_up_and_Drop_off] || "Não selecionado");
+
+    document.getElementById('selection-Selected_Vehicle_Route').innerText =
+      "Vehicle Route Methodology - " + (Selected_Vehicle_RouteMap[Selected_Vehicle_Route] || "Não selecionado");
+
+    document.getElementById('selection-Selected_Booking').innerText =
+      "Booking Methodology - " + (Selected_BookingMap[Selected_Booking] || "Não selecionado");
+
+    document.getElementById('selection-Selected_Time_Window').innerText =
+      "Selected Time Window - " + (Selected_Time_WindowMap[Selected_Time_Window] || "Não selecionado");
+
+    // --- Mapa interativo da service area (igual ao arquivo anterior) ---
+    (function initServiceAreaMap() {
+      const storageKey = "service_area_points"; // mesmo do arquivo anterior
+      const savedPoints = localStorage.getItem(storageKey);
+
+      if (!savedPoints) return; // sem pontos salvos, não cria mapa
+
+      const coords = JSON.parse(savedPoints);
+      if (!Array.isArray(coords) || coords.length === 0) return;
+
+      const map = L.map('map');
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+      }).addTo(map);
+
+      const latLngs = coords.map(c => L.latLng(c[0], c[1]));
+
+      // Marcadores
+      latLngs.forEach(p => {
+        L.circleMarker(p, { radius: 5, color: '#ff7800' }).addTo(map);
+      });
+
+      // Polígono se houver 3+ pontos
+      if (latLngs.length >= 3) {
+        L.polygon(latLngs, { color: '#0077b6', weight: 2, fillOpacity: 0.15 }).addTo(map);
+      }
+
+      map.fitBounds(L.latLngBounds(latLngs).pad(0.2));
+    })();
+  </script>
+
+  <!-- Fleet summary -->
+  <script>
+    const fleetData = JSON.parse(localStorage.getItem('fleetData') || '[]');
+    const fleetBody = document.getElementById("fleetSummaryBody");
+
+    if (fleetData.length === 0) {
+      fleetBody.innerHTML = '<tr><td colspan="5" style="padding: 10px; border: 1px solid #ccc;">No vehicle data available.</td></tr>';
+    } else {
+      fleetData.forEach(vehicle => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td style="padding: 8px; border: 1px solid #ccc;">${vehicle.type}</td>
+          <td style="padding: 8px; border: 1px solid #ccc;">${vehicle.fleetSize}</td>
+          <td style="padding: 8px; border: 1px solid #ccc;">${vehicle.capacity}</td>
+          <td style="padding: 8px; border: 1px solid #ccc;">${vehicle.emissions}</td>
+          <td style="padding: 8px; border: 1px solid #ccc;">${vehicle.speed}</td>
+        `;
+        fleetBody.appendChild(row);
+      });
+    }
+  </script>
+
+  <div class="buttons">
+    <button class="back-button" onclick="gerarPDF()">PDF Report</button>
+    <button class="back-button" onclick="window.location.href='8_MUSE_5.html'">BACK</button>
+    <button class="next-button" onclick="window.location.href='DELOS_0.html'">NEXT</button>
+  </div>
+
+  <!-- jsPDF CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    async function gerarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      let y = 20;
+
+      const linhaSeparadora = () => { doc.setDrawColor(150); doc.line(10, y, 200, y); y += 10; };
+      const secaoTitulo = (titulo) => { doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.text(titulo, 10, y); y += 8; linhaSeparadora(); };
+      const addLinha = (label, valor) => {
+        const maxWidthLabel = 60, maxWidthValor = 120;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+        doc.text(`${label}:`, 15, y, { maxWidth: maxWidthLabel });
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
+        const valorLines = doc.splitTextToSize(valor, maxWidthValor);
+        doc.text(valorLines, 80, y, { maxWidth: maxWidthValor });
+        const lineHeight = 6, usedHeight = valorLines.length * lineHeight;
+        y += usedHeight + 1;
+        if (y > 280) { doc.addPage(); y = 20; }
+      };
+
+      const coord = JSON.parse(localStorage.getItem('ServiceAreaCoords')) || {};
+      const fleetData = JSON.parse(localStorage.getItem('fleetData') || '[]');
+
+      const Purpose_1 = localStorage.getItem('Purpose_1');
+      const Purpose_2 = localStorage.getItem('Purpose_2');
+      const Target_passenger = localStorage.getItem('Target_passenger');
+      const Service_Hour_1 = localStorage.getItem('Service_Hour_1');
+      const Selected_Pick_up_and_Drop_off = localStorage.getItem('Selected_Pick_up_and_Drop_off');
+      const Selected_Vehicle_Route = localStorage.getItem('Selected_Vehicle_Route');
+      const Selected_Booking = localStorage.getItem('Selected_Booking');
+      const Selected_Time_Window = localStorage.getItem('Selected_Time_Window');
+
+      // Título
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+      doc.text("DRT Strategic Project", 105, 10, null, null, 'center');
+      doc.setFontSize(12);
+
+      // 1. Directive Variables
+      secaoTitulo("1. Directive Variables");
+      addLinha("Purpose 1", Purpose_1Map[Purpose_1] || "Undefined");
+      addLinha("Purpose 2", Purpose_2Map[Purpose_2] || "Undefined");
+      addLinha("Target Passengers", Target_passengerMap[Target_passenger] || "Undefined");
+      addLinha("Service Hours", Service_Hour_1Map[Service_Hour_1] || "Undefined");
+
+// Pelo seguinte:
+const servicePoints = JSON.parse(localStorage.getItem("service_area_points") || "[]");
+if (servicePoints.length > 0) {
+  let coordsText = servicePoints
+    .map((c, i) => `${i + 1}. (${c[0].toFixed(5)}, ${c[1].toFixed(5)})`)
+    .join("\n");
+  addLinha("Service Area - Vertices", coordsText);
+} else {
+  addLinha("Service Area - Vertices", "Undefined");
+}
+
+      // 2. Operational Variables
+      secaoTitulo("2. Operational Variables");
+      addLinha("Pick-Up and Drop-off Points Methodology:\n", Selected_Pick_up_and_Drop_offMap[Selected_Pick_up_and_Drop_off] || "Undefined");
+      addLinha("Vehicle Route Methodology", Selected_Vehicle_RouteMap[Selected_Vehicle_Route] || "Undefined");
+      addLinha("Booking Methodology", Selected_BookingMap[Selected_Booking] || "Undefined");
+      addLinha("Time-Window Methodology:", Selected_Time_WindowMap[Selected_Time_Window] || "Undefined");
+
+      if (fleetData.length > 0) {
+        fleetData.forEach((v, index) => {
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+          doc.text(`Vehicle Type ${index + 1}:`, 15, y); y += 7;
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
+          doc.text(`Type: ${v.type} | Fleet Size: ${v.fleetSize} | Capacity: ${v.capacity}`, 20, y); y += 6;
+          doc.text(`CO2 Emissions: ${v.emissions} g/km | Speed: ${v.speed} km/h`, 20, y); y += 10;
+          if (y > 280) { doc.addPage(); y = 20; }
+        });
+      } else {
+        doc.setFont('helvetica', 'italic'); doc.text("Undefined Fleet Configuration.", 15, y);
+      }
+
+      doc.save("DRT_Strategic_Project.pdf");
+    }
+  </script>
+
+</body>
+</html>

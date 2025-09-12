@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>APOLO - DELOS Module</title>
+  <style>
+    body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      padding-top: 140px; /* match 8_MUSE_1 */
+      box-sizing: border-box;
+    }
+
+    /* Flow/image at the top (not fixed) like 8_MUSE_1 */
+    .content {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .flow-image {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto 30px auto; /* centered even on wide screens */
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f0f8ff;
+      text-align: center;
+    }
+
+    select {
+      padding: 6px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      background-color: #f9f9f9;
+    }
+
+    /* Buttons centered in a row, like 8_MUSE_1 */
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap; /* allow wrap only when truly needed */
+      justify-content: center; /* keep buttons together & centered on large screens */
+      align-items: center; /* prevent vertical stretch on small screens */
+      width: 100%;
+      padding: 20px;
+    }
+
+    .next-button,
+    .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 12px 22px;
+      font-size: 16px;
+      flex: 0 0 auto; /* do not grow full width */
+      min-width: 140px; /* consistent size */
+    }
+
+    .next-button:hover,
+    .back-button:hover {
+      background-color: #90c7e6;
+    }
+
+    h1 { text-align: center; }
+    /* Responsive tweaks */
+    @media (max-width: 600px) {
+      .buttons { gap: 12px; justify-content: center; }
+      .next-button, .back-button { min-width: 120px; padding: 10px 16px; font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Image at the top (replicating 8_MUSE_1) -->
+  <div class="content">
+    <img src="DELOS.png" alt="Start Flow" class="flow-image">
+  </div>
+
+  <!-- Main content -->
+  <div class="content">
+    <h1>Booking Features Evaluation</h1>
+    <p>Classify the following circumstances regarding the trip booking methodology</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Circumstance</th>
+          <th>Pro/Con evaluations</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Buttons (centered, not fixed) -->
+  <div class="buttons">
+    <button class="back-button" onclick="window.location.href='DELOS_0.html'">BACK</button>
+    <button class="next-button" onclick="calculateSums()">NEXT</button>
+  </div>
+
+<script>
+  const rows = [
+    "The passenger does not need to move physically to book the trip.",
+    "The passenger needs to physically displace to complete the booking process",
+    "The passenger can book trips directly with an employee, facilitating booking and clarifying doubts.",
+    "Speaking with a staff provides special comfort for passengers, especially elderly",
+    "Small structures can be a bottleneck when booking trips simultaneously",
+    "The passenger can book trips 24/7",
+    "Booking is restricted to the operating hours of the booking service.",
+    "The passenger can book trips without any technologic aparatus (telephone, computer, etc.)",
+    "The passengers used to technology may book trips fast and easily",
+    "The passengers unfamiliar with technology may have difficulty accessing the system",
+    "A physical service point must be created and maintained for passenger assistance.",    
+    "A call center infrastructure must be created and maintained.",    
+    "A web-based system must be developed and maintained."
+  ];
+
+  
+  const options = `
+    <option value="3">Strongly Pro</option>
+    <option value="1">Slightly Pro</option>
+    <option value="0" selected>Neutral</option>
+    <option value="-1">Slightly Con</option>
+    <option value="-3">Strongly Con</option>
+  `;
+
+  const tableBody = document.getElementById("tableBody");
+
+  rows.forEach((label, idx) => {
+    tableBody.innerHTML += `
+      <tr>
+        <td>${label}</td>
+        <td><select id="row_${idx}">${options}</select></td>
+      </tr>
+    `;
+  });
+
+  // Ensure default selection is Neutral
+  rows.forEach((_, idx) => {
+    const sel = document.getElementById(`row_${idx}`);
+    if (sel) sel.value = "0";
+  });
+
+  function calculateSums() {
+    let sum = { Physical: 0, Telephone: 0, Web: 0 };
+    const values = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const val = parseInt(document.getElementById(`row_${i}`).value);
+      if (isNaN(val)) {
+        alert("Please classify all items before continuing.");
+        return;
+      }
+      values.push(val);
+    }
+
+    // Manual assignment for full control
+    sum.Web += values[0];
+    sum.Web += values[6];
+    sum.Web -= values[7];
+    sum.Web += values[8];
+    sum.Web += values[9];
+    sum.Web += values[12];
+
+    sum.Telephone += values[0];
+    sum.Telephone += values[2];
+    sum.Telephone += values[3];
+    sum.Telephone += values[5];
+    sum.Telephone += values[4];
+    sum.Telephone += values[11];
+
+    sum.Physical += values[1];
+    sum.Physical += values[2];
+    sum.Physical += values[3];
+    sum.Physical += values[4];
+    sum.Physical += values[7];
+    sum.Physical += values[10];
+
+    // Save
+    localStorage.setItem("Sum_Physical", sum.Physical);
+    localStorage.setItem("Sum_Telephone", sum.Telephone);
+    localStorage.setItem("Sum_Web", sum.Web);
+
+    window.location.href = 'DELOS_2.html';
+  }
+</script>
+
+</body>
+</html>

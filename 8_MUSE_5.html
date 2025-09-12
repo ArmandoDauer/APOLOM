@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APOLO - MUSE Module</title>
+  <style>
+     body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      padding-top: 140px;
+      box-sizing: border-box;
+    }
+      
+    .flow-image {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 30px;
+    }
+
+    .flow {
+    /*  position: fixed; */
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: #e5eff5;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 10px;
+      justify-content: center;
+      z-index: 1000;
+      flex-wrap: wrap;
+    }
+
+    .description {
+      padding-top: 70px;
+      max-width: 900px;
+      margin: 0 auto 60px auto;
+      text-align: justify;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .step, .step-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .step {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #1e90ff;
+      color: white;
+    }
+
+    .step.active {
+      background-color: #87cefa;
+      color: black;
+    }
+
+    .step-label {
+      position: absolute;
+      top: 60px;
+      font-size: 12px;
+      width: 80px;
+      text-align: center;
+    }
+
+    .step-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .arrow {
+      width: 30px;
+      height: 5px;
+      background-color: #a0a0a0;
+    }
+
+    .triangle-start, .triangle-end {
+      width: 0;
+      height: 0;
+      border-top: 25px solid transparent;
+      border-bottom: 25px solid transparent;
+    }
+
+    .triangle-start {
+      border-left: 40px solid #1e90ff;
+    }
+
+    .triangle-end {
+      border-right: 40px solid #1e90ff;
+    }
+
+    .triangle-start.active {
+      border-left-color: #87cefa;
+    }
+
+    .triangle-end.active {
+      border-right-color: #87cefa;
+    }
+
+    .content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .line {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+
+
+    }
+
+    .left {
+      flex: 1;
+      text-align: flex;
+      font-size: 16px;
+      line-height: 1.6;
+      width: 400px;
+    }
+
+    .right {
+      flex: 1;
+      padding-top: 70px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 400px;
+    }
+
+    select {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      background-color: #f9f9f9;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .next-button,
+    .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    .next-button:hover,
+    .back-button:hover {
+      background-color: #90c7e6;
+    }
+
+    .centered-title {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- Fixed Flow -->
+  <div class="flow">
+      <img src="MUSE.png" alt="Start Flow" class="flow-image">
+  </div>
+
+  <!-- Conteúdo principal -->
+  <div class="content">
+    <h2 class="centered-title">Inform the Vehicle fleet</h2>
+    <p> The fleet of vehicles that will operate in the DRT varies according to the social, political, and economic conditions of the service area. In this case, it is difficult to suggest the most suitable fleet configuration, as it depends on local priorities, available resources, and operational constraints. Therefore, the decision-maker must define the fleet directly, considering the unique characteristics and needs of the territory.</p>
+    <button onclick="addVehicle()">+ Add Vehicles</button>
+
+    <table id="fleetTable">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Number of Vehicles</th>
+          <th>Capacity (passengers)</th>
+          <th>Emissions (g of CO2/km)</th>
+          <th>Average Speed (km/h)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+    <div class="buttons">
+      <button class="back-button" onclick="window.location.href='8_MUSE_4.html'">BACK</button>
+      <button class="next-button" onclick="saveFleet()">NEXT</button>
+    </div>
+
+    
+
+  <script>
+    const defaults = {
+      "Car/Taxi": { capacity: 4, emissions: 121, speed: 30 },
+      "Van": { capacity: 8, emissions: 150, speed: 30 },
+      "Minibus": { capacity: 15, emissions: 170, speed: 27 },
+      "BUS": { capacity: 30, emissions: 190, speed: 25 }
+    };
+
+    function addVehicle() {
+      const table = document.getElementById("fleetTable").querySelector("tbody");
+      const row = document.createElement("tr");
+
+      const vehicleTypes = Object.keys(defaults);
+      const defaultType = vehicleTypes[0];
+      const defaultData = defaults[defaultType];
+
+      row.innerHTML = `
+        <td>
+          <select onchange="updateDefaults(this)">
+            ${vehicleTypes.map(type => `<option value="${type}">${type}</option>`).join('')}
+          </select>
+        </td>
+        <td><input type="number" min="1" value="1" class="fleetSize"></td>
+        <td><input type="number" value="${defaultData.capacity}" class="capacity"></td>
+        <td><input type="number" value="${defaultData.emissions}" class="emissions"></td>
+        <td><input type="number" value="${defaultData.speed}" class="speed"></td>
+      `;
+      table.appendChild(row);
+    }
+
+    function updateDefaults(select) {
+      const type = select.value;
+      const row = select.closest("tr");
+      row.querySelector(".capacity").value = defaults[type].capacity;
+      row.querySelector(".emissions").value = defaults[type].emissions;
+      row.querySelector(".speed").value = defaults[type].speed;
+    }
+
+    function saveFleet() {
+      const rows = document.querySelectorAll("#fleetTable tbody tr");
+      const fleetData = [];
+
+      rows.forEach(row => {
+        const type = row.querySelector("select").value;
+        const fleetSize = parseInt(row.querySelector(".fleetSize").value);
+        const capacity = parseInt(row.querySelector(".capacity").value);
+        const emissions = parseInt(row.querySelector(".emissions").value);
+        const speed = parseInt(row.querySelector(".speed").value);
+
+        fleetData.push({ type, fleetSize, capacity, emissions, speed });
+      });
+
+      localStorage.setItem("fleetData", JSON.stringify(fleetData));
+      window.location.href = "8_MUSE_final.html"; // Altere para o nome real da próxima página
+    }
+  </script>
+</body>
+
+
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>APOLO - DELOS Module</title>
+  <style>
+    body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      padding-top: 140px; /* match 8_MUSE_1 */
+      box-sizing: border-box;
+    }
+
+    /* Flow/image at the top (not fixed) like 8_MUSE_1 */
+    .content {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .flow-image {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto 30px auto; /* centered even on wide screens */
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f0f8ff;
+      text-align: center;
+    }
+
+    select {
+      padding: 6px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      background-color: #f9f9f9;
+    }
+
+    /* Buttons centered in a row, like 8_MUSE_1 */
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap; /* allow wrap only when truly needed */
+      justify-content: center; /* keep buttons together & centered on large screens */
+      align-items: center; /* prevent vertical stretch on small screens */
+      width: 100%;
+      padding: 20px;
+    }
+
+    .next-button,
+    .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 12px 22px;
+      font-size: 16px;
+      flex: 0 0 auto; /* do not grow full width */
+      min-width: 140px; /* consistent size */
+    }
+
+    .next-button:hover,
+    .back-button:hover {
+      background-color: #90c7e6;
+    }
+
+    h1 { text-align: center; }
+    /* Responsive tweaks */
+    @media (max-width: 600px) {
+      .buttons { gap: 12px; justify-content: center; }
+      .next-button, .back-button { min-width: 120px; padding: 10px 16px; font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Image at the top (replicating 8_MUSE_1) -->
+  <div class="content">
+    <img src="DELOS.png" alt="Start Flow" class="flow-image">
+  </div>
+
+  <!-- Main content -->
+  <div class="content">
+    <h1>Faring Methodology Evaluation</h1>
+    <p>Classify the following circunstances regarding the fare methodology</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Circunstance</th>
+          <th>Pro/Con evalutaions</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Centered buttons -->
+  <div class="buttons">
+    <button class="back-button" onclick="window.location.href='DELOS_1.html'">BACK</button>
+    <button class="next-button" onclick="calculateSums()">NEXT</button>
+  </div>
+
+    
+
+<script>
+  const rows = [
+    "The passenger can easily understand the prince of the fare.",
+    "The passenger may see the systemś fare as fair, those who travel more, pay more.",
+    "Passengers and operators know exactly how much to pay and recieve for every trip, regardless of the trip.",
+    "The system's revenue increases propostionally to passengers' travel distance.",
+    "The longer the trip, the more attractive the fare becomes to the passenger.",
+    "The fare calculation may become complex, requiring GPS-based computations.",
+    "Passenger's may choose not to use the system for long trips due to higher costs.",
+    "Passengers who travel short distances may feel dissatisfied, as they pay the same fare as those travelling longer distances.",
+    "There are fewer incentives for passengers to optimize their route.",
+    "The operational viability of the system may be compromised if a high percentage of trips are long-distance."
+  ];
+
+  
+  
+  const options = `
+    <option value="3">Strongly Pro</option>
+    <option value="1">Slightly Pro</option>
+    <option value="0" selected>Neutral</option>
+    <option value="-1">Slightly Con</option>
+    <option value="-3">Strongly Con</option>
+  `;
+
+  const tableBody = document.getElementById("tableBody");
+  rows.forEach((label, idx) => {
+    tableBody.innerHTML += `
+      <tr>
+        <td>${label}</td>
+        <td><select id="row_${idx}">${options}</select></td>
+      </tr>
+    `;
+  });
+
+  // Ensure default selection is Neutral
+  rows.forEach((_, idx) => {
+    const sel = document.getElementById(`row_${idx}`);
+    if (sel) sel.value = "0";
+  });
+
+
+  // Ensure default selection is Neutral
+  rows.forEach((_, idx) => {
+    const sel = document.getElementById(`row_${idx}`);
+    if (sel) sel.value = "0";
+  });
+
+  function calculateSums() {
+    let sum = { Fixed_Fare: 0, Distance_Based_Fare: 0 };
+    const values = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const val = parseInt(document.getElementById(`row_${i}`).value);
+      if (isNaN(val)) {
+        alert("Please classify all items before continuing.");
+        return;
+      }
+      values.push(val);
+    }
+
+    sum.Fixed_Fare += values[0];
+    sum.Fixed_Fare += values[2];
+    sum.Fixed_Fare += values[4];
+    sum.Fixed_Fare += values[7];
+    sum.Fixed_Fare += values[8];
+    sum.Fixed_Fare += values[9];
+
+    sum.Distance_Based_Fare += values[1];
+    sum.Distance_Based_Fare += values[3];
+    sum.Distance_Based_Fare += values[5];
+    sum.Distance_Based_Fare += values[6];
+
+    localStorage.setItem("Fixed_Fare", sum.Fixed_Fare);
+    localStorage.setItem("Distance_Based_Fare", sum.Distance_Based_Fare);
+
+    window.location.href = 'DELOS_3.html';
+  }
+  // measure fixed image and set spacer height
+  window.addEventListener('load', () => {
+    const img = document.getElementById('fixedHero');
+    if (!img) return;
+    const setH = () => document.documentElement.style.setProperty('--image-h', (img.clientHeight + 40) + 'px');
+    setH();
+    window.addEventListener('resize', setH);
+  });
+</script>
+
+</body>
+</html>

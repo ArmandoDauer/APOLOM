@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>APOLO - DELOS Module</title>
+  <style>
+    body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      padding-top: 140px; /* match 8_MUSE_1 */
+      box-sizing: border-box;
+    }
+
+    /* Flow/image at the top (not fixed) like 8_MUSE_1 */
+    .content {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .flow-image {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto 30px auto; /* centered even on wide screens */
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f0f8ff;
+      text-align: center;
+    }
+
+    select {
+      padding: 6px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      background-color: #f9f9f9;
+    }
+
+    /* Buttons centered in a row, like 8_MUSE_1 */
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap; /* allow wrap only when truly needed */
+      justify-content: center; /* keep buttons together & centered on large screens */
+      align-items: center; /* prevent vertical stretch on small screens */
+      width: 100%;
+      padding: 20px;
+    }
+
+    .next-button,
+    .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 12px 22px;
+      font-size: 16px;
+      flex: 0 0 auto; /* do not grow full width */
+      min-width: 140px; /* consistent size */
+    }
+
+    .next-button:hover,
+    .back-button:hover {
+      background-color: #90c7e6;
+    }
+
+    h1 { text-align: center; }
+    /* Responsive tweaks */
+    @media (max-width: 600px) {
+      .buttons { gap: 12px; justify-content: center; }
+      .next-button, .back-button { min-width: 120px; padding: 10px 16px; font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Image at the top (replicating 8_MUSE_1) -->
+  <div class="content">
+    <img src="DELOS.png" alt="Start Flow" class="flow-image">
+  </div>
+
+  <!-- Main content -->
+  <div class="content">
+  <h1>Payment Method Evaluation</h1>
+    <p>Classify the following circunstances regarding the paying methodology</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Circunstance</th>
+        <th>Pro/Con evalutaions</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<!-- Buttons -->
+  <div class="buttons">
+        <button class="back-button" onclick="window.location.href='DELOS_4.html'">BACK</button>
+        <button class="next-button" onclick="calculateSums()">NEXT</button>
+  </div>
+
+    
+
+
+<script>
+  const rows = [
+        "The passenger's boarding process is quick.",
+        "First time passengers may be confused about how to pay for the trip.",
+        "The passenger must pay the fare in advance, via a physical or digital system.",
+        "The passenger can access the system in quick and spontaneous way.",
+        "The driver's workload is reduced.",
+        "Driver will have to recieve the passenger's money and return change.",
+        "Some methodology (electronic or manual) must be developed to verify the paymnet of fares.",
+        "There is no need to additional elements to manage ticket selling.",
+        "The number of issues during boarding is reduced (such as lack of cash or change).",
+        "Integration with other transport services is harder."
+  ];
+
+  
+  const options = `
+    <option value="3">Strongly Pro</option>
+    <option value="1">Slightly Pro</option>
+    <option value="0" selected>Neutral</option>
+    <option value="-1">Slightly Con</option>
+    <option value="-3">Strongly Con</option>
+  `;
+
+  const tableBody = document.getElementById("tableBody");
+
+  rows.forEach((label, idx) => {
+    tableBody.innerHTML += `
+      <tr>
+        <td>${label}</td>
+        <td><select id="row_${idx}">${options}</select></td>
+      </tr>
+    `;
+  });
+
+  // Ensure default selection is Neutral
+  rows.forEach((_, idx) => {
+    const sel = document.getElementById(`row_${idx}`);
+    if (sel) sel.value = "0";
+  });
+
+  function calculateSums() {
+    let sum = { Credit_Based: 0, When_Boarding: 0};
+    const values = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const val = parseInt(document.getElementById(`row_${i}`).value);
+      if (isNaN(val)) {
+        alert("Please classify all items before continuing.");
+        return;
+      }
+      values.push(val);
+    }
+
+    // Manual assignment for full control
+      sum.Credit_Based += values[0];
+      sum.Credit_Based += values[1];
+      sum.Credit_Based += values[2];
+      sum.Credit_Based += values[4];
+      sum.Credit_Based += values[6];
+      sum.Credit_Based += values[8];
+      sum.When_Boarding += values[3];
+      sum.When_Boarding += values[5];
+      sum.When_Boarding += values[7];
+      sum.When_Boarding += values[9];
+
+
+
+    // Save
+    localStorage.setItem("Credit_Based", sum.Credit_Based);
+    localStorage.setItem("When_Boarding", sum.When_Boarding);
+
+    window.location.href = 'DELOS_4_1.html';
+  }
+</script>
+
+</body>
+</html>

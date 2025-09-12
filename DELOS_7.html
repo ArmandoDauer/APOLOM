@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>APOLO - DELOS Module</title>
+  <style>
+    body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      padding-top: 140px; /* match 8_MUSE_1 */
+      box-sizing: border-box;
+    }
+
+    /* Flow/image at the top (not fixed) like 8_MUSE_1 */
+    .content {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .flow-image {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto 30px auto; /* centered even on wide screens */
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f0f8ff;
+      text-align: center;
+    }
+
+    select {
+      padding: 6px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      background-color: #f9f9f9;
+    }
+
+    /* Buttons centered in a row, like 8_MUSE_1 */
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap; /* allow wrap only when truly needed */
+      justify-content: center; /* keep buttons together & centered on large screens */
+      align-items: center; /* prevent vertical stretch on small screens */
+      width: 100%;
+      padding: 20px;
+    }
+
+    .next-button,
+    .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 12px 22px;
+      font-size: 16px;
+      flex: 0 0 auto; /* do not grow full width */
+      min-width: 140px; /* consistent size */
+    }
+
+    .next-button:hover,
+    .back-button:hover {
+      background-color: #90c7e6;
+    }
+
+    h1 { text-align: center; }
+    th:nth-child(3), td:nth-child(3) {
+      width: 1%;
+      white-space: nowrap;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 600px) {
+      .buttons { gap: 12px; justify-content: center; }
+      .next-button, .back-button { min-width: 120px; padding: 10px 16px; font-size: 15px; }
+    }
+  
+    /* Make the Selection column only as wide as needed */
+    .selection-col { 
+      width: 1%;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+</style>
+</head>
+<body>
+
+  <!-- Image at the top (replicating 8_MUSE_1) -->
+  <div class="content">
+    <img src="DELOS.png" alt="Start Flow" class="flow-image">
+  </div>
+
+  <!-- Main content -->
+  <div class="content">
+
+<h1>Select Booking Method</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Element</th>
+      <th>Pro/Con Analysis</th>
+      <th class="selection-col">Selection</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Physical</strong><br/>Passengers book trips by visiting a physical location (e.g., agency or ticket office).</td>
+      <td id="physical_analysis"></td>
+      <td class="selection-col" rowspan="3">
+        <select id="selection">
+          <option value="">Select...</option>
+          <option value="Physical">Physical</option>
+          <option value="Telephone">Telephone</option>
+          <option value="Web">Web</option>
+          <option value="Physical & Telephone">Physical & Telephone</option>
+          <option value="Physical & Web">Physical & Web</option>
+          <option value="Telephone & Web">Telephone & Web</option>
+          <option value="Physical, Telephone & Web">Physical, Telephone & Web</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Telephone</strong><br/>Passengers call to schedule a ride, usually by speaking to a representative or using an automated system.</td>
+      <td id="telephone_analysis"></td>
+    </tr>
+    <tr>
+      <td><strong>Web</strong><br/>Passengers book trips through a website or mobile application.</td>
+      <td id="web_analysis"></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="buttons">
+  <button class="back-button" onclick="window.location.href='DELOS_6.html'">BACK</button>
+  <button class="next-button" onclick="saveSelection()">NEXT</button>
+</div>
+
+<script>
+  function classify(value) {
+    if (value >= 2.5) return "Majority Pro";
+    if (value >= 0.5) return "Somewhat Pro";
+    if (value > -0.5) return "Neutral";
+    if (value >= -2) return "Somewhat Con";
+    return "Majority Con";
+  }
+
+window.onload = () => {
+  const sumPhysical = parseFloat(localStorage.getItem("Sum_Physical") || 0);
+  const sumTelephone = parseFloat(localStorage.getItem("Sum_Telephone") || 0);
+  const sumWeb = parseFloat(localStorage.getItem("Sum_Web") || 0);
+
+  document.getElementById("physical_analysis").innerText = classify(sumPhysical);
+  document.getElementById("telephone_analysis").innerText = classify(sumTelephone);
+  document.getElementById("web_analysis").innerText = classify(sumWeb);
+}
+
+  function saveSelection() {
+    const selection = document.getElementById("selection").value;
+    if (!selection) {
+      alert("Please select one option before continuing.");
+      return;
+    }
+    localStorage.setItem("Selected_Booking_Method", selection);
+    window.location.href = 'DELOS_7_1.html';
+  }
+</script>
+
+</body>
+</html>
