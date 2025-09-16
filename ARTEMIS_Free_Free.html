@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>APOLO — Generate Demand</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root { --blue:#1e90ff; --blue-dark:#0b5ea8; --green:#1fa87a; --red:#d84a4a; --walk:#7a7a7a; }
+    body { background:#e5eff5; margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; display:flex; justify-content:center; }
+    .container { max-width:900px; width:100%; padding:16px; box-sizing:border-box; display:flex; flex-direction:column; gap:12px; }
+    .flow-image { max-width:100%; height:auto; margin-bottom:8px; }
+    .panel { background:#ffffffcc; border-radius:12px; padding:12px; }
+    .panel h2 { margin:4px 0 8px 0; }
+
+    .form-row { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+    .form-row label { font-weight:600; font-size:14px; }
+    .form-row input[type="number"] { width:100%; padding:10px; border-radius:10px; border:1px solid #cfe3f7; background:#f7fbff; }
+
+    .buttons { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+    .btn { background:#add8e6; border:1px solid #000; border-radius:20px; font-weight:700; padding:10px 18px; cursor:pointer; }
+    .btn:hover { background:#90c7e6; }
+
+    .error { color:#b00020; font-size:14px; display:none; margin-top:6px; }
+
+    #tripsList { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+    .trip-item { width:100%; text-align:left; background:#f7fbff; border:1px solid #d6e9ff; border-radius:12px; padding:12px; font-weight:600; cursor:pointer; }
+
+    #map { width:100%; height:58vh; min-height:360px; border-radius:12px; overflow:hidden; }
+    @media (min-width: 920px){ #map { height:520px; } }
+
+    .legend { display:flex; gap:10px; align-items:center; font-size:13px; margin-top:6px; flex-wrap:wrap; }
+    .lg { display:flex; align-items:center; gap:6px; }
+    .dot { width:12px; height:12px; border-radius:50%; display:inline-block; }
+    .dot.blue { background:var(--blue); border:2px solid var(--blue-dark); }
+    .dot.green { background:var(--green); }
+    .dot.red { background:var(--red); }
+    .line { width:24px; height:3px; border-radius:2px; background:var(--blue); }
+    .line.walk { background:var(--walk); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="Directive_Variables.png" alt="Directive Variables Flow" class="flow-image" />
+
+    <div class="panel">
+      <h2>Gerar Demanda</h2>
+<p style="margin-top:0">
+Set the parameters and click <strong>Generate Demand</strong>.
+Now, <strong>each trip is generated with two random points</strong> within the service area polygon.
+These points simultaneously serve as <em>origin/pickup</em> and <em>destination/drop-off</em>.
+Each trip receives a random <em>pickup</em> time between <strong>7:00 AM and 8:00 AM (minutes). </p>
+<div class="form-row">
+<label for="tripsPerHour">Trips per hour (max. 15)</label>
+<input id="tripsPerHour" type="number" min="1" max="15" step="1" value="6" />
+</div>
+<div class="form-row">
+<label for="numVehicles">Number of vehicles</label>
+<input id="numVehicles" type="number" min="1" step="1" value="3" />
+</div>
+<div class="form-row">
+<label for="maxWalk">Maximum walking distance to the stop (m)</label>
+<input id="maxWalk" type="number" min="50" step="10" value="400" />
+<small>Note: This parameter is maintained for compatibility, but is not used in this generation.</small> 
+</div> 
+<div class="buttons"> 
+<button class="btn" id="btnGenerate">Generate Demand</button> 
+<a class="btn" href="ARTEMIS_0.html">BACK</a> 
+<button class="btn" id="btnNext">NEXT</button> 
+</div> 
+<div id="error" class="error"></div> 
+</div>
+
+    <div class="panel">
+      <h2>Trip requests</h2>
+      <div id="tripsList"></div>
+    </div>
+
+    <div class="panel">
+      <div id="map"></div>
+      <div class="legend">
+        <div class="lg"><span class="dot green"></span> Origin (O)</div>
+        <div class="lg"><span class="dot red"></span> Destination (D)</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SERVICE_AREA_KEY = 'service_area_points';
+    const DEMAND_SETTINGS_KEY = 'demand_settings';
+    const GENERATED_TRIPS_KEY = 'generated_trips';
+
+    const map = L.map('map', { zoomControl:true }).setView([41.16, -8.60], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    setTimeout(()=>map.invalidateSize(), 200);
+    window.addEventListener('resize', ()=> setTimeout(()=>map.invalidateSize(), 150));
+
+    // Service Area
+    let areaCoords = [];
+    try {
+      const saved = localStorage.getItem(SERVICE_AREA_KEY);
+      if (saved) areaCoords = JSON.parse(saved).map(c => L.latLng(c[0], c[1]));
+    } catch(e){ console.warn(e); }
+    let servicePoly = null;
+    if (areaCoords.length >= 3) {
+      servicePoly = L.polygon(areaCoords, { color:'#0077b6', weight:2, fillOpacity:0.12, interactive:false }).addTo(map);
+      map.fitBounds(servicePoly.getBounds().pad(0.2));
+    }
+
+    const errorEl = document.getElementById('error');
+    function showError(msg){ errorEl.textContent = msg; errorEl.style.display='block'; setTimeout(()=> errorEl.style.display='none', 4000); }
+
+    function metersPerDegreeLat(){ return 111320; }
+    function metersPerDegreeLng(lat){ return 111320 * Math.cos(lat * Math.PI/180); }
+
+    function pointInPolygon(latlng, polygonLatLngs) {
+      if (!polygonLatLngs || polygonLatLngs.length < 3) return true; // sem polígono: aceitar qualquer ponto
+      let x = latlng.lng, y = latlng.lat;
+      let inside = false;
+      for (let i = 0, j = polygonLatLngs.length - 1; i < polygonLatLngs.length; j = i++) {
+        const xi = polygonLatLngs[i].lng, yi = polygonLatLngs[i].lat;
+        const xj = polygonLatLngs[j].lng, yj = polygonLatLngs[j].lat;
+        const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / ((yj - yi) || 1e-12) + xi);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+
+    function randomPointInPolygon(polygonLatLngs){
+      // Se não houver polígono, sorteia dentro do viewport atual do mapa
+      if (!polygonLatLngs || polygonLatLngs.length < 3){
+        const b = map.getBounds();
+        const lat = b.getSouth() + Math.random() * (b.getNorth() - b.getSouth());
+        const lng = b.getWest() + Math.random() * (b.getEast() - b.getWest());
+        return L.latLng(lat, lng);
+      }
+      // Caixa envolvente
+      const lats = polygonLatLngs.map(p=>p.lat);
+      const lngs = polygonLatLngs.map(p=>p.lng);
+      const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+      const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+      // Amostragem por rejeição
+      for (let k=0; k<200; k++){
+        const lat = minLat + Math.random()*(maxLat - minLat);
+        const lng = minLng + Math.random()*(maxLng - minLng);
+        const cand = L.latLng(lat, lng);
+        if (pointInPolygon(cand, polygonLatLngs)) return cand;
+      }
+      // fallback raro: usa centroide aproximado
+      const lat = (minLat + maxLat)/2; const lng = (minLng + maxLng)/2;
+      return L.latLng(lat, lng);
+    }
+
+    function makeBadgeIcon(text, bg, border){
+      return L.divIcon({
+        className:'badge-icon',
+        html:`<div style="background:${bg};color:#fff;border:2px solid ${border};min-width:28px;height:28px;line-height:24px;border-radius:50%;text-align:center;font-weight:800;padding:0 6px;">${text}</div>`,
+        iconSize:[28,28], iconAnchor:[14,28], popupAnchor:[0,-28]
+      });
+    }
+
+    function randomPickupTime(){ const m = Math.floor(Math.random()*60); return '07:' + String(m).padStart(2,'0'); }
+
+    // Persistência de settings
+    const tripsEl = document.getElementById('tripsPerHour');
+    const vehEl   = document.getElementById('numVehicles');
+    const walkEl  = document.getElementById('maxWalk');
+
+    try{
+      const s = JSON.parse(localStorage.getItem(DEMAND_SETTINGS_KEY) || '{}');
+      if (s.tripsPerHour) tripsEl.value = s.tripsPerHour;
+      if (s.numVehicles)  vehEl.value   = s.numVehicles;
+      if (s.maxWalkM)     walkEl.value  = s.maxWalkM; // mantido por compatibilidade
+    }catch(e){}
+
+    function saveSettings(){
+      let t = Math.max(1, Math.min(15, parseInt(tripsEl.value || '1', 10)));
+      let v = Math.max(1, parseInt(vehEl.value || '1', 10));
+      let w = Math.max(50, parseInt(walkEl.value || '50', 10));
+      tripsEl.value = t; vehEl.value = v; walkEl.value = w;
+      localStorage.setItem(DEMAND_SETTINGS_KEY, JSON.stringify({ tripsPerHour:t, numVehicles:v, maxWalkM:w }));
+      return { t, v, w };
+    }
+    [tripsEl, vehEl, walkEl].forEach(el => el.addEventListener('change', saveSettings));
+
+    // Geração de viagens (aleatórias dentro do polígono)
+    const tripsListEl = document.getElementById('tripsList');
+    let trips = []; // {id,pickupTime,origin:{lat,lng},destination:{lat,lng}, pickup:{lat,lng,code:'O',name:'Origem'}, dropoff:{lat,lng,code:'D',name:'Destino'}}
+
+    function generateTrips(){
+      const { t } = saveSettings();
+      trips = [];
+      for (let i=0; i<t; i++){
+        const origin = randomPointInPolygon(areaCoords);
+        let destination = randomPointInPolygon(areaCoords);
+        // Garantir que origem e destino não sejam praticamente iguais
+        let tries = 0;
+        while (origin.distanceTo(destination) < 5 && tries < 50){
+          destination = randomPointInPolygon(areaCoords);
+          tries++;
+        }
+        trips.push({
+          id:'trip_'+(i+1),
+          pickupTime: randomPickupTime(),
+          origin,
+          destination,
+          // manter campos para compatibilidade com páginas seguintes
+          pickup: { lat: origin.lat, lng: origin.lng, code: 'O', name: 'Origem' },
+          dropoff: { lat: destination.lat, lng: destination.lng, code: 'D', name: 'Destino' }
+        });
+      }
+      localStorage.setItem(GENERATED_TRIPS_KEY, JSON.stringify(trips));
+      renderTripsList();
+      if (trips.length) selectTrip(0);
+    }
+
+    function renderTripsList(){
+      tripsListEl.innerHTML = '';
+      if (!trips.length){
+        const p = document.createElement('p');
+        p.textContent = 'Nenhuma viagem gerada ainda.';
+        tripsListEl.appendChild(p);
+        return;
+      }
+      trips.forEach((tr, i)=>{
+        const btn = document.createElement('button');
+        btn.className = 'trip-item';
+        btn.textContent = `trip ${i+1} — ${tr.pickupTime || '07:00'} — O→D`;
+        btn.addEventListener('click', ()=> selectTrip(i));
+        tripsListEl.appendChild(btn);
+      });
+    }
+
+    // Mapa
+    let mapLayerGroup = L.layerGroup().addTo(map);
+    function selectTrip(index){
+      const tr = trips[index]; if (!tr) return;
+      mapLayerGroup.clearLayers();
+
+      const iconO  = makeBadgeIcon('O',  'var(--green)', 'rgba(0,0,0,0.35)');
+      const iconD  = makeBadgeIcon('D',  'var(--red)',   'rgba(0,0,0,0.35)');
+
+      L.marker(tr.origin, { icon: iconO }).addTo(mapLayerGroup).bindTooltip('Origem', {permanent:false});
+      L.marker(tr.destination, { icon: iconD }).addTo(mapLayerGroup).bindTooltip('Destino', {permanent:false});
+
+      const bounds = L.latLngBounds([tr.origin, tr.destination]).pad(0.25);
+      map.fitBounds(bounds);
+    }
+
+    document.getElementById('btnGenerate').addEventListener('click', generateTrips);
+
+    document.getElementById('btnNext').addEventListener('click', ()=>{
+      if (!trips.length){ generateTrips(); }
+      if (!trips.length){ showError('Não foi possível gerar viagens. Verifique a área de serviço e tente novamente.'); return; }
+      localStorage.setItem(GENERATED_TRIPS_KEY, JSON.stringify(trips));
+      window.location.href = 'ARTEMIS_Free_Free_2.html';
+    });
+
+    (function restore(){
+      try{
+        const arr = JSON.parse(localStorage.getItem(GENERATED_TRIPS_KEY) || '[]');
+        if (Array.isArray(arr) && arr.length){
+          trips = arr;
+          renderTripsList();
+          selectTrip(0);
+        } else {
+          renderTripsList();
+        }
+      }catch(e){ renderTripsList(); }
+    })();
+  </script>
+</body>
+</html>

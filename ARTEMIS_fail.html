@@ -115,40 +115,27 @@
     <div class="purposes">
       <h2>ARTEMIS Module</h2>
         <p>
-        The ARTEMIS module focuses on a simulating the operational configurations defined on the MUSE model, allowing an assessment of the DRT configuration under analysis. 
+            We apologize, but in the current develoment stage, the simulations provided by the ARTEMIS module are only available for the following configurations:
+        </p>
+        <ul>
+            <li> <b>Specific Request Point</b> with <b>Free Floating Between Stops</b> routes and <b>A Prior</b> trip requests </li>
+            <li> <b>Existing Mapped Point</b> with <b>Free Floating Between Stops</b> routes and <b>A Prior</b> trip requests </li>
+        </ul>
+        <p>
+            More configurations will be added as the development continue. 
         </p>
         <p>
-        Based on the Operational variables’ values selected in MUSE, this module intends to simulate the daily operation of the DRT in a virtual scenario, generate data for analysing and determine if this configuration achieves the objectives of the design, or if it must be adjusted.
-
+            If the simulation is pivotal for your design, you may use a third party software or, as a last resource, go back to the MUSE module and ajust your configurations. You may also continue to the following module, DELOS.
         </p>
     </div>
 
     <!-- Buttons -->
     <div class="buttons">
       <button class="next-button" onclick="window.location.href='8_MUSE_final.html'">BACK</button>
-      <button class="next-button" onclick="goNext()">NEXT</button>
+      <button class="next-button" onclick="window.location.href='MUSE_0.html'">BACK to MUSE module</button>
+      <button class="next-button" onclick="window.location.href='DELOS_0.html'">START DELOS module</button>
     </div>
   </div>
 
-<script>
-  function goNext() {
-    const booking = localStorage.getItem('Selected_Booking');
-    const pudo    = localStorage.getItem('Selected_Pick_up_and_Drop_off');
-    const route   = localStorage.getItem('Selected_Vehicle_Route');
-
-    if (booking === 'A_prior' && pudo === 'specific_request_poit' && route === 'free_floating') {
-      // A_prior + Specific Request Point + Free Floating
-      window.location.href = 'ARTEMIS_Free_Free.html';
-
-    } else if (booking === 'A_prior' && pudo === 'existing_mapped_point' && route === 'free_floating') {
-      // A_prior + Existing Mapped Point + Free Floating
-      window.location.href = 'ARTEMIS_Fixed_Free.html';
-
-    } else {
-      // Qualquer outra seleção
-      window.location.href = 'ARTEMIS_fail.html';
-    }
-  }
-</script>
 </body>
 </html>

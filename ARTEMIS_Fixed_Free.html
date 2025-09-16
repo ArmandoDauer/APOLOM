@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APOLO — Pick-up & Drop-off Points</title>
+  <style>
+    body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-sizing: border-box;
+    }
+
+    .flow-image {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 30px;
+    }
+
+    .purposes {
+      text-align: justify;
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      background-color: #ffffffaa;
+      padding: 20px;
+      border-radius: 8px;
+      width: 100%;
+    }
+
+    #map {
+      width: 100%;
+      height: 500px;
+      margin-bottom: 16px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .panel {
+      width: 100%;
+      background: #ffffffaa;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .hint {
+      font-size: 14px;
+      margin: 0 0 8px 0;
+    }
+
+    .points-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .points-table th, .points-table td {
+      border-bottom: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    .points-table th {
+      background: #f3f7fa;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .next-button, .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    .next-button:hover, .back-button:hover { background-color: #90c7e6; }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #e8f4ff;
+      border: 1px solid #b3d7ff;
+      font-size: 12px;
+      margin-left: 6px;
+    }
+
+    .error {
+      color: #b00020;
+      font-size: 14px;
+      margin: 6px 0 0 0;
+    }
+
+    @media (max-width: 768px) {
+      .purposes { font-size: 14px; padding: 15px; }
+      #map { height: 320px; }
+      .buttons { flex-direction: column; }
+      .next-button, .back-button { width: 100%; }
+    }
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Fluxograma (mesmo visual da página anterior) -->
+    <img src="Directive_Variables.png" alt="Directive Variables Flow" class="flow-image" />
+
+    <!-- Descrição -->
+    <div class="purposes">
+      <h2>Pick-up & Drop-off Points</h2>
+      <p>
+        Selecione <strong>pontos dentro da Service Area</strong> clicando no mapa. Os pontos serão utilizados como locais de <em>pick-up</em> e <em>drop-off</em> para passageiros.
+        Você pode arrastar os marcadores para refinar a posição. Para apagar um ponto, use o botão 
+        <span class="pill">Remover</span> na lista. No <strong>Next</strong>, os pontos serão salvos para uso futuro.
+      </p>
+    </div>
+
+    <!-- Mapa -->
+    <div id="map"></div>
+
+    <!-- Painel de pontos -->
+    <div class="panel">
+      <p class="hint"><strong>Lista de pontos</strong> — Edite o nome (opcional). Clique em um nome para focar o mapa naquele ponto.</p>
+      <div id="error" class="error" style="display:none;"></div>
+      <table class="points-table" id="pointsTable">
+        <thead>
+          <tr><th>#</th><th>Nome</th><th>Latitude</th><th>Longitude</th><th>Ações</th></tr>
+        </thead>
+        <tbody id="pointsBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Botões -->
+    <div class="buttons">
+      <button class="back-button" onclick="window.location.href='ARTEMIS_0.html'">BACK</button>
+      <button class="next-button" onclick="clearPoints()">CLEAN POINTS</button>
+      <button class="next-button" onclick="saveAndNext()">NEXT</button>
+    </div>
+  </div>
+
+  <script>
+    // ==== Chaves de armazenamento ====
+    const SERVICE_AREA_KEY = 'service_area_points';
+    const PUDO_KEY = 'pudo_points';
+
+    // ==== Inicialização do mapa ====
+    const map = L.map('map').setView([41.16, -8.60], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+    // ==== Recupera e desenha a Service Area salva ====
+    let areaCoords = [];
+    try {
+      const saved = localStorage.getItem(SERVICE_AREA_KEY);
+      if (saved) {
+        const raw = JSON.parse(saved);
+        areaCoords = raw.map(c => L.latLng(c[0], c[1]));
+      }
+    } catch (e) { console.error('Erro lendo service area:', e); }
+
+    let servicePolygon = null;
+    if (areaCoords.length >= 3) {
+      servicePolygon = L.polygon(areaCoords, { color: '#0077b6', weight: 2, fillOpacity: 0.15, interactive: false }).addTo(map);
+      map.fitBounds(L.latLngBounds(areaCoords).pad(0.2));
+    } else {
+      // Sem área, avisa o usuário
+      showError('Nenhuma Service Area encontrada. Volte e defina a área na etapa anterior.');
+    }
+
+    // ==== Utilidades ====
+    function showError(msg) {
+      const el = document.getElementById('error');
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 4000);
+    }
+
+    // Teste ponto-dentro-de-polígono (ray casting)
+    function pointInPolygon(latlng, polygonLatLngs) {
+      let x = latlng.lng, y = latlng.lat;
+      let inside = false;
+      for (let i = 0, j = polygonLatLngs.length - 1; i < polygonLatLngs.length; j = i++) {
+        const xi = polygonLatLngs[i].lng, yi = polygonLatLngs[i].lat;
+        const xj = polygonLatLngs[j].lng, yj = polygonLatLngs[j].lat;
+        const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / ((yj - yi) || 1e-12) + xi);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+
+    // ==== PUDO points ====
+    let pudoPoints = []; // {id, name, marker}
+
+    function addPoint(latlng, name) {
+      const id = Date.now() + '_' + Math.random().toString(16).slice(2);
+      const idx = pudoPoints.length + 1;
+      const label = name || `PUDO ${idx}`;
+
+      const marker = L.marker(latlng, { draggable: true }).addTo(map).bindTooltip(label, {permanent: true, direction: 'top', offset: [0, -14]});
+
+      marker.on('dragend', () => {
+        updateRow(id);
+      });
+
+      const point = { id, name: label, marker };
+      pudoPoints.push(point);
+      renderTable();
+    }
+
+    function removePoint(id) {
+      const i = pudoPoints.findIndex(p => p.id === id);
+      if (i >= 0) {
+        map.removeLayer(pudoPoints[i].marker);
+        pudoPoints.splice(i, 1);
+        renderTable();
+      }
+    }
+
+    function clearPoints() {
+      pudoPoints.forEach(p => map.removeLayer(p.marker));
+      pudoPoints = [];
+      renderTable();
+      localStorage.removeItem(PUDO_KEY);
+    }
+
+    function updateRow(id) {
+      const p = pudoPoints.find(pp => pp.id === id);
+      if (!p) return;
+      const row = document.querySelector(`tr[data-id="${id}"]`);
+      if (!row) return;
+      const latlng = p.marker.getLatLng();
+      row.querySelector('.lat').textContent = latlng.lat.toFixed(6);
+      row.querySelector('.lng').textContent = latlng.lng.toFixed(6);
+    }
+
+    function renderTable() {
+      const body = document.getElementById('pointsBody');
+      body.innerHTML = '';
+      pudoPoints.forEach((p, i) => {
+        const latlng = p.marker.getLatLng();
+        const tr = document.createElement('tr');
+        tr.dataset.id = p.id;
+        tr.innerHTML = `
+          <td>${i + 1}</td>
+          <td>
+            <input type="text" value="${p.name}" aria-label="Nome do ponto" style="width: 180px" />
+          </td>
+          <td class="lat">${latlng.lat.toFixed(6)}</td>
+          <td class="lng">${latlng.lng.toFixed(6)}</td>
+          <td>
+            <button onclick="focusPoint('${p.id}')">Focar</button>
+            <button onclick="deletePoint('${p.id}')">Remover</button>
+          </td>`;
+        // Atualiza o nome no marker ao editar
+        const input = tr.querySelector('input');
+        input.addEventListener('input', (e) => {
+          p.name = e.target.value || `PUDO ${i + 1}`;
+          p.marker.setTooltipContent(p.name);
+        });
+        body.appendChild(tr);
+      });
+    }
+
+    window.focusPoint = function(id) {
+      const p = pudoPoints.find(pp => pp.id === id);
+      if (!p) return;
+      map.setView(p.marker.getLatLng(), Math.max(map.getZoom(), 16));
+      p.marker.openTooltip();
+    }
+
+    window.deletePoint = function(id) { removePoint(id); }
+
+    // Clique no mapa para adicionar ponto (apenas dentro da Service Area)
+    map.on('click', (e) => {
+      if (!servicePolygon) { showError('Defina a Service Area primeiro.'); return; }
+      const inside = pointInPolygon(e.latlng, areaCoords);
+      if (!inside) {
+        showError('Clique dentro da Service Area para adicionar um ponto.');
+        return;
+      }
+      addPoint(e.latlng);
+    });
+
+    // Restaura pontos salvos
+    (function restoreSavedPUDO(){
+      try {
+        const saved = localStorage.getItem(PUDO_KEY);
+        if (!saved) return;
+        const arr = JSON.parse(saved);
+        arr.forEach((o) => {
+          const latlng = L.latLng(o.lat, o.lng);
+          addPoint(latlng, o.name);
+        });
+      } catch (e) {
+        console.error('Erro ao restaurar PUDO:', e);
+      }
+    })();
+
+    // Salva e avança
+    function saveAndNext() {
+      // Persiste pontos [{name, lat, lng}]
+      const data = pudoPoints.map(p => {
+        const ll = p.marker.getLatLng();
+        return { name: p.name, lat: +ll.lat.toFixed(8), lng: +ll.lng.toFixed(8) };
+      });
+      localStorage.setItem(PUDO_KEY, JSON.stringify(data));
+      // Avança para a próxima etapa existente no fluxo
+      window.location.href = 'ARTEMIS_Fixed_Free_2.html';
+    }
+  </script>
+</body>
+</html>
+d

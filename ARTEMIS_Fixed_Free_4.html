@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ARTEMIS — KPIs Consolidados (FIX)</title>
+  <style>
+    :root { --blue:#1e90ff; --green:#1fa87a; --red:#d84a4a; --amber:#d8a44a; }
+    body { background:#e5eff5; margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; display:flex; justify-content:center; color:#0b2540; }
+    .container { max-width:1100px; width:100%; padding:16px; box-sizing:border-box; display:flex; flex-direction:column; gap:12px; }
+    .panel { background:#ffffffcc; border-radius:12px; padding:12px; }
+    h1,h2,h3 { margin:6px 0 10px; }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .buttons { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+    .btn { background:#add8e6; border:1px solid #000; border-radius:20px; font-weight:700; padding:10px 18px; cursor:pointer; }
+    .btn:hover { background:#90c7e6; }
+    .pill { display:inline-block; padding:4px 10px; border-radius:999px; background:#eef6ff; border:1px solid #cfe3f7; font-size:12px; margin-right:6px;}
+    .tbl { width:100%; border-collapse:collapse; }
+    .tbl th,.tbl td { padding:8px; border-bottom:1px solid #e3eef9; text-align:left; font-size:14px; vertical-align:top; }
+    .muted { opacity:.85; }
+    .warn { color:#a24d00; }
+    .ok { color:#1fa87a; }
+    .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+    .grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+    code { background:#eef6ff; padding:1px 6px; border-radius:6px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="panel">
+      <h1>ARTEMIS — KPIs Consolidados</h1>
+      <div class="buttons">
+        <button class="btn" id="btnBack">BACK</button>
+        <button class="btn" id="btnRecalc">Recalculate</button>
+        <button class="btn" id="btnExportCsv">Export CSV</button>
+        <button class="btn" id="btnExportJson">Export JSON</button>
+        <!-- NOVO: NEXT para a página final -->
+        <button class="btn" id="btnNext">NEXT</button>
+      </div>
+      <div style="margin-top:6px" class="muted">
+        Fonte de dados: <code>localStorage.kpi_transfer_v1</code> e <code>localStorage.co2_per_km</code>.
+      </div>
+    </div>
+
+    <div class="panel" id="overviewPanel">
+      <h2>Overview</h2>
+      <div id="overviewPills"></div>
+      <div class="grid-3" style="margin-top:10px">
+        <div><strong>Speed (km/h):</strong> <span id="ovSpeed">-</span></div>
+        <div><strong>Time Window (min):</strong> <span id="ovTW">-</span></div>
+        <div><strong>CO₂ (kg/km):</strong> <span id="ovCO2">-</span></div>
+        <div><strong>Cost/km:</strong> <span id="ovCkm">-</span></div>
+        <div><strong>Fixed/veh:</strong> <span id="ovCfix">-</span></div>
+        <div><strong>Vehicles (setting):</strong> <span id="ovNveh">-</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Comfort</h2>
+      <table class="tbl" id="tblComfortAgg"></table>
+      <h3 style="margin-top:14px">Comfort — por viagem (serviced)</h3>
+      <table class="tbl" id="tblComfortTrips"></table>
+      <div class="muted" style="margin-top:6px">
+        Definições: TD = DO_est − PU_est; WAT = max(0, PU_est − Desired); TTT = TD + WAT (se WAT &gt; 0, senão TD);
+        ETT = TD − (Earliest − Desired); ETD = real_km(PU→DO) − direct_km(PU→DO).
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Reliability</h2>
+      <table class="tbl" id="tblReliability"></table>
+    </div>
+
+    <div class="panel">
+      <h2>Efficiency</h2>
+      <table class="tbl" id="tblEfficiency"></table>
+      <div class="muted" style="margin-top:6px">
+        Observação: OC calculado sem penalização por viagens não atendidas (<em>apenas custos operacionais reais</em>).
+        PVKT é apresentado em duas formas para referência: <strong>Trips/VKT</strong> e <strong>VKT/Trip</strong>.
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Carbon Footprint</h2>
+      <table class="tbl" id="tblCarbon"></table>
+      <div class="muted" style="margin-top:6px">
+        AVO é calculado como <code>passenger-km ÷ vehicle-km</code>. CO₂p segue sua definição: <code>(VKT × CO₂/km) ÷ trips_served</code>.
+        CO₂pkm conforme solicitado: <code>CO₂p ÷ VKT</code>.
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Dados indisponíveis nesta etapa</h2>
+      <ul class="muted">
+        <li>Accessibility: PWD, SPT, SAC</li>
+        <li>Efficiency: PD (deadheads detalhado), RROC</li>
+        <li>Carbon Footprint: UPT, HLV</li>
+      </ul>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const KPI_TRANSFER_KEY = 'kpi_transfer_v1';
+  const CO2_PER_KM_KEY = 'co2_per_km';
+
+  // Util
+  const fmt2 = n => (isFinite(n)? Number(n).toFixed(2) : '-');
+  const safe = v => (v==null || Number.isNaN(v) ? null : v);
+  function download(filename, text){
+    const el = document.createElement('a');
+    el.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    el.setAttribute('download', filename);
+    el.style.display='none';
+    document.body.appendChild(el);
+    el.click();
+    document.body.removeChild(el);
+  }
+
+  function loadPayload(){
+    let payload = null;
+    try { const s = localStorage.getItem(KPI_TRANSFER_KEY); if (s) payload = JSON.parse(s); } catch(e){}
+    const co2PerKmSaved = parseFloat(localStorage.getItem(CO2_PER_KM_KEY)||'');
+    return { payload, co2PerKmSaved: isFinite(co2PerKmSaved)? co2PerKmSaved : null };
+  }
+
+  function calcAll(){
+    const { payload, co2PerKmSaved } = loadPayload();
+    const out = {
+      ok:false, errors:[]
+    };
+
+    if (!payload){
+      out.errors.push('Pacote não encontrado em localStorage.kpi_transfer_v1. Volte à etapa anterior e clique em NEXT.');
+      return out;
+    }
+
+    const params = payload.params || {};
+    const sol = payload.solution || { vehicles:[], unserved:[] };
+    const perTrip = payload.perTrip || [];
+
+    // Overview & básicos
+    const speed = Number(params.speedKmh || 25);
+    const twMin = Number(params.twMin || 10);
+    const costKm = Number(params.costKm || 0);
+    const costFix = Number(params.costFix || 0);
+    const vehiclesSetting = params.numVehiclesSetting ?? null;
+    const co2km = isFinite(params.co2PerKm)? Number(params.co2PerKm) : (co2PerKmSaved ?? 0);
+    const vkt = Number((payload.summary && payload.summary.vkt) || 0);
+    const vehiclesUsed = Number((payload.summary && payload.summary.vehiclesUsed) || 0);
+    const unserved = Number((payload.summary && payload.summary.unservedCount) || 0);
+    const served = Number((payload.summary && payload.summary.servedCount) || 0);
+
+    // Comfort por viagem (apenas trips com PU e DO estimados)
+    const comfortRows = [];
+    let agg = { TD:0, WAT:0, TTT:0, ETT:0, ETD:0, N:0, passengerKm:0 };
+    perTrip.forEach(t=>{
+      const pu = safe(t.estPuMin), dpu = safe(t.desiredDepartureMin), doT = safe(t.estDoMin);
+      if (pu==null || doT==null || dpu==null) return; // ignorar viagens sem tempos completos
+      const directKm = Number(t.directKm || 0);
+      const realSlice = Number(t.realKmBetweenPuDo || 0);
+      const earliest = safe(t.earliestArrivalMin);
+
+      const TD = Math.max(0, doT - pu); // minutos
+      const WAT = Math.max(0, pu - dpu); // espera só se PU >= Desired
+      const TTT = TD + WAT;
+      const ideal = (earliest!=null && dpu!=null) ? Math.max(0, earliest - dpu) : null;
+      const ETT = ideal!=null ? (TD - ideal) : null;
+      const ETD = realSlice - directKm;
+
+      comfortRows.push({
+        tripUid: t.tripUid, vehicleIndex: t.vehicleIndex, TD, WAT, TTT, ETT, ETD, directKm, realSlice
+      });
+
+      agg.N++;
+      agg.TD += TD;
+      agg.WAT += WAT;
+      agg.TTT += TTT;
+      if (ETT_isFinite(ETT)) agg.ETT += ETT; // << FIX: nome correto da função
+      agg.ETD += ETD;
+      agg.passengerKm += Math.max(0, realSlice);
+    });
+
+    function ETT_isFinite(x){ return x!=null && isFinite(x); }
+
+    // Reliability
+    const totalRequests = served + unserved;
+    const PDT = totalRequests>0 ? (unserved / totalRequests)*100 : null;
+
+    // Efficiency
+    const OC = (vkt * costKm) + (vehiclesUsed * costFix); // sem penalidade
+    const OCT = served>0 ? (OC / served) : null;
+    const PVKT_tripsPerKm = vkt>0 ? (served / vkt) : null;
+    const PVKT_kmPerTrip   = served>0 ? (vkt / served) : null;
+
+    // Carbon
+    const totalCO2 = vkt * co2km; // kg
+    const CO2p = served>0 ? (totalCO2 / served) : null; // kg/passenger
+    const CO2pkm = (CO2p!=null && vkt>0) ? (CO2p / vkt) : null; // conforme definição fornecida
+    const AVO = vkt>0 ? (agg.passengerKm / vkt) : null; // ocupação média (passenger-km / vehicle-km)
+
+    out.ok = true;
+    out.params = { speed, twMin, costKm, costFix, vehiclesSetting, co2km };
+    out.summary = { vkt, vehiclesUsed, served, unserved, totalRequests };
+    out.comfort = { rows:comfortRows, agg };
+    out.reliability = { PDT };
+    out.efficiency = { OC, OCT, PVKT_tripsPerKm, PVKT_kmPerTrip };
+    out.carbon = { totalCO2, CO2p, CO2pkm, AVO };
+    out.raw = { payload };
+    return out;
+  }
+
+  function fillOverview(res){
+    const pills = document.getElementById('overviewPills');
+    pills.innerHTML = '';
+    const s = res.summary;
+    const add = (label,val) => pills.insertAdjacentHTML('beforeend', `<span class="pill"><strong>${label}:</strong> ${val}</span>`);
+    add('Vehicles used', s.vehiclesUsed);
+    add('Trips served', s.served);
+    add('Unserved', s.unserved);
+    add('Total requests', s.totalRequests);
+    add('Total km (VKT)', fmt2(s.vkt));
+
+    document.getElementById('ovSpeed').textContent = fmt2(res.params.speed);
+    document.getElementById('ovTW').textContent = fmt2(res.params.twMin);
+    document.getElementById('ovCO2').textContent = fmt2(res.params.co2km);
+    document.getElementById('ovCkm').textContent = fmt2(res.params.costKm);
+    document.getElementById('ovCfix').textContent = fmt2(res.params.costFix);
+    document.getElementById('ovNveh').textContent = res.params.vehiclesSetting ?? '-';
+  }
+
+  function renderComfort(res){
+    const agg = res.comfort.agg;
+    const N = agg.N||0;
+    const avg = (x) => N>0 ? x/N : null;
+
+    // Agregado
+    const tblAgg = document.getElementById('tblComfortAgg');
+    tblAgg.innerHTML = '';
+    tblAgg.insertAdjacentHTML('beforeend', `<tr>
+      <th>Métrica</th><th>Média (min)</th><th>Total (min)</th><th>Obs.</th>
+    </tr>`);
+    const rows = [
+      ['TD','Travel Duration', fmt2(avg(agg.TD)), fmt2(agg.TD),'—'],
+      ['WAT','Waiting/Anticipation', fmt2(avg(agg.WAT)), fmt2(agg.WAT),'max(0, PU − Desired)'],
+      ['TTT','Total Travel Time', fmt2(avg(agg.TTT)), fmt2(agg.TTT),'TD + WAT se WAT>0, senão TD'],
+      ['ETT','Excess Travel Time', fmt2(avg(agg.ETT)), fmt2(agg.ETT),'TD − (Earliest − Desired)'],
+      ['ETD','Excess Travel Distance (km)', fmt2(avg(agg.ETD)), fmt2(agg.ETD),'real_km − direct_km (PU→DO)'],
+      ['Passenger-km','Passenger-km (km)', fmt2(agg.passengerKm), fmt2(agg.passengerKm),'Somatório das distâncias reais PU→DO']
+    ];
+    rows.forEach(r=>{
+      tblAgg.insertAdjacentHTML('beforeend', `<tr><td><strong>${r[0]}</strong></td><td>${r[2]}</td><td>${r[3]}</td><td class="muted">${r[4]}</td></tr>`);
+    });
+
+    // Por viagem
+    const tblTrips = document.getElementById('tblComfortTrips');
+    tblTrips.innerHTML = '';
+    tblTrips.insertAdjacentHTML('beforeend', `<tr>
+      <th>Trip</th><th>Veh</th><th>TD (min)</th><th>WAT (min)</th><th>TTT (min)</th><th>ETT (min)</th><th>ETD (km)</th><th>Direct km</th><th>Real PU→DO km</th>
+    </tr>`);
+    if (!res.comfort.rows.length){
+      tblTrips.insertAdjacentHTML('beforeend', `<tr><td colspan="9">Sem viagens atendidas.</td></tr>`);
+    } else {
+      res.comfort.rows.forEach(r=>{
+        tblTrips.insertAdjacentHTML('beforeend',
+          `<tr>
+            <td>${r.tripUid}</td>
+            <td>${(r.vehicleIndex!=null? (r.vehicleIndex+1): '-')}</td>
+            <td>${fmt2(r.TD)}</td>
+            <td>${fmt2(r.WAT)}</td>
+            <td>${fmt2(r.TTT)}</td>
+            <td>${r.ETT!=null?fmt2(r.ETT):'-'}</td>
+            <td>${fmt2(r.ETD)}</td>
+            <td>${fmt2(r.directKm)}</td>
+            <td>${fmt2(r.realSlice)}</td>
+          </tr>`
+        );
+      });
+    }
+  }
+
+  function renderReliability(res){
+    const tbl = document.getElementById('tblReliability');
+    tbl.innerHTML = '';
+    tbl.insertAdjacentHTML('beforeend', `<tr><th>KPI</th><th>Valor</th><th>Definição</th></tr>`);
+    const PDT = res.reliability.PDT;
+    tbl.insertAdjacentHTML('beforeend',
+      `<tr>
+        <td><strong>PDT</strong></td>
+        <td>${PDT!=null ? fmt2(PDT)+' %' : '-'}</td>
+        <td class="muted">Unserved ÷ Total requests × 100</td>
+      </tr>`
+    );
+  }
+
+  function renderEfficiency(res){
+    const tbl = document.getElementById('tblEfficiency');
+    tbl.innerHTML = '';
+    tbl.insertAdjacentHTML('beforeend', `<tr><th>KPI</th><th>Valor</th><th>Unidade</th><th>Definição</th></tr>`);
+    const E = res.efficiency;
+    const rows = [
+      ['VKT', res.summary.vkt, 'km', 'Vehicle-km travelled'],
+      ['OC',  E.OC, 'currency units', 'Operation Cost = VKT×cost/km + vehiclesUsed×fixed/veh'],
+      ['OCT', E.OCT, 'currency units / trip', 'OC ÷ trips served'],
+      ['PVKT (Trips/VKT)', E.PVKT_tripsPerKm, 'trips/km', 'Trips served ÷ VKT'],
+      ['PVKT (VKT/Trip)', E.PVKT_kmPerTrip, 'km/trip', 'VKT ÷ Trips served']
+    ];
+    rows.forEach(r=>{
+      tbl.insertAdjacentHTML('beforeend', `<tr><td><strong>${r[0]}</strong></td><td>${r[1]!=null?fmt2(r[1]):'-'}</td><td>${r[2]}</td><td class="muted">${r[3]}</td></tr>`);
+    });
+  }
+
+  function renderCarbon(res){
+    const tbl = document.getElementById('tblCarbon');
+    tbl.innerHTML = '';
+    tbl.insertAdjacentHTML('beforeend', `<tr><th>KPI</th><th>Valor</th><th>Unidade</th><th>Definição</th></tr>`);
+    const C = res.carbon;
+    const rows = [
+      ['Total CO₂', C.totalCO2, 'kg', 'VKT × CO₂/km'],
+      ['CO₂ per passenger (CO2p)', C.CO2p, 'kg/passenger', '(VKT × CO₂/km) ÷ trips served'],
+      ['CO₂ per passenger per km (CO2pkm)', C.CO2pkm, 'kg/(passenger·km*)', 'CO2p ÷ VKT (conforme definição fornecida)'],
+      ['Average Vehicle Occupancy (AVO)', C.AVO, 'passengers', 'Passenger-km ÷ Vehicle-km']
+    ];
+    rows.forEach(r=>{
+      tbl.insertAdjacentHTML('beforeend', `<tr><td><strong>${r[0]}</strong></td><td>${r[1]!=null?fmt2(r[1]):'-'}</td><td>${r[2]}</td><td class="muted">${r[3]}</td></tr>`);
+    });
+  }
+
+  function renderAll(){
+    const res = calcAll();
+    if (!res.ok){
+      alert((res.errors||[]).join('\n') || 'Erro ao carregar dados.');
+      return;
+    }
+    fillOverview(res);
+    renderComfort(res);
+    renderReliability(res);
+    renderEfficiency(res);
+    renderCarbon(res);
+
+    // Botões de exportação
+    document.getElementById('btnExportCsv').onclick = ()=>{
+      const lines = [];
+      lines.push('tripUid,vehicleIndex,TD_min,WAT_min,TTT_min,ETT_min,ETD_km,direct_km,real_km');
+      calcAll().comfort.rows.forEach(r=>{
+        lines.push([
+          r.tripUid,
+          (r.vehicleIndex!=null? (r.vehicleIndex+1): ''),
+          fmt2(r.TD),
+          fmt2(r.WAT),
+          fmt2(r.TTT),
+          (r.ETT!=null?fmt2(r.ETT):''),
+          fmt2(r.ETD),
+          fmt2(r.directKm),
+          fmt2(r.realSlice)
+        ].join(','));
+      });
+      download('artemis_kpis_trips.csv', lines.join('\n'));
+    };
+
+    document.getElementById('btnExportJson').onclick = ()=>{
+      const res = calcAll();
+      download('artemis_kpis.json', JSON.stringify(res, null, 2));
+    };
+
+  }
+
+  // Eventos UI
+  document.getElementById('btnBack').addEventListener('click', ()=> history.back());
+  document.getElementById('btnRecalc').addEventListener('click', renderAll);
+
+  document.getElementById('btnNext').addEventListener('click', ()=>{
+    window.location.href = 'ARTEMIS_Final.html';
+  })
+
+  // Init
+  renderAll();
+})();
+</script>
+</body>
+</html>

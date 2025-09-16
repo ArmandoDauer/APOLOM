@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>APOLO — Gerar Demanda</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root { --blue:#1e90ff; --blue-dark:#0b5ea8; --green:#1fa87a; --red:#d84a4a; --walk:#7a7a7a; }
+    body { background:#e5eff5; margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; display:flex; justify-content:center; }
+    .container { max-width:900px; width:100%; padding:16px; box-sizing:border-box; display:flex; flex-direction:column; gap:12px; }
+    .flow-image { max-width:100%; height:auto; margin-bottom:8px; }
+    .panel { background:#ffffffcc; border-radius:12px; padding:12px; }
+    .panel h2 { margin:4px 0 8px 0; }
+
+    .form-row { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+    .form-row label { font-weight:600; font-size:14px; }
+    .form-row input[type="number"] { width:100%; padding:10px; border-radius:10px; border:1px solid #cfe3f7; background:#f7fbff; }
+
+    .buttons { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+    .btn { background:#add8e6; border:1px solid #000; border-radius:20px; font-weight:700; padding:10px 18px; cursor:pointer; }
+    .btn:hover { background:#90c7e6; }
+
+    .error { color:#b00020; font-size:14px; display:none; margin-top:6px; }
+
+    #tripsList { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+    .trip-item { width:100%; text-align:left; background:#f7fbff; border:1px solid #d6e9ff; border-radius:12px; padding:12px; font-weight:600; cursor:pointer; }
+
+    #map { width:100%; height:58vh; min-height:360px; border-radius:12px; overflow:hidden; }
+    @media (min-width: 920px){ #map { height:520px; } }
+
+    .legend { display:flex; gap:10px; align-items:center; font-size:13px; margin-top:6px; flex-wrap:wrap; }
+    .lg { display:flex; align-items:center; gap:6px; }
+    .dot { width:12px; height:12px; border-radius:50%; display:inline-block; }
+    .dot.blue { background:var(--blue); border:2px solid var(--blue-dark); }
+    .dot.green { background:var(--green); }
+    .dot.red { background:var(--red); }
+    .line { width:24px; height:3px; border-radius:2px; background:var(--blue); }
+    .line.walk { background:var(--walk); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="Directive_Variables.png" alt="Directive Variables Flow" class="flow-image" />
+
+    <div class="panel">
+      <h2>Gerar Demanda</h2>
+      <p style="margin-top:0">
+        Defina os parâmetros e clique em <strong>Generate Demand</strong>.
+        As viagens usam os PUDO salvos (mesmos <strong>códigos alfabéticos</strong> em lista e mapa).
+        Cada viagem recebe um horário de <em>pick-up</em> aleatório entre <strong>07:00 e 08:00</strong> (minutos).
+      </p>
+      <div class="form-row">
+        <label for="tripsPerHour">Viagens por hora (máx. 15)</label>
+        <input id="tripsPerHour" type="number" min="1" max="15" step="1" value="6" />
+      </div>
+      <div class="form-row">
+        <label for="numVehicles">Quantidade de veículos</label>
+        <input id="numVehicles" type="number" min="1" step="1" value="3" />
+      </div>
+      <div class="form-row">
+        <label for="maxWalk">Distância máxima de caminhada até a parada (m)</label>
+        <input id="maxWalk" type="number" min="50" step="10" value="400" />
+      </div>
+      <div class="buttons">
+        <button class="btn" id="btnGenerate">Generate Demand</button>
+        <a class="btn" href="ARTEMIS_Fixed_Free.html">BACK</a>
+        <button class="btn" id="btnNext">NEXT</button>
+      </div>
+      <div id="error" class="error"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Viagens</h2>
+      <div id="tripsList"></div>
+    </div>
+
+    <div class="panel">
+      <div id="map"></div>
+      <div class="legend">
+        <div class="lg"><span class="dot green"></span> Origem (O)</div>
+        <div class="lg"><span class="dot blue"></span> Paragens (letras)</div>
+        <div class="lg"><span class="dot red"></span> Destino (D)</div>
+        <div class="lg"><span class="line"></span> Linha entre paragens</div>
+        <div class="lg"><span class="line walk"></span> Caminhada (O→PU, DO→D)</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SERVICE_AREA_KEY = 'service_area_points';
+    const PUDO_KEY = 'pudo_points';
+    const DEMAND_SETTINGS_KEY = 'demand_settings';
+    const GENERATED_TRIPS_KEY = 'generated_trips';
+
+    const map = L.map('map', { zoomControl:true }).setView([41.16, -8.60], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    setTimeout(()=>map.invalidateSize(), 200);
+    window.addEventListener('resize', ()=> setTimeout(()=>map.invalidateSize(), 150));
+
+    // Service Area
+    let areaCoords = [];
+    try {
+      const saved = localStorage.getItem(SERVICE_AREA_KEY);
+      if (saved) areaCoords = JSON.parse(saved).map(c => L.latLng(c[0], c[1]));
+    } catch(e){ console.warn(e); }
+    let servicePoly = null;
+    if (areaCoords.length >= 3) {
+      servicePoly = L.polygon(areaCoords, { color:'#0077b6', weight:2, fillOpacity:0.12, interactive:false }).addTo(map);
+      map.fitBounds(servicePoly.getBounds().pad(0.2));
+    }
+
+    const errorEl = document.getElementById('error');
+    function showError(msg){ errorEl.textContent = msg; errorEl.style.display='block'; setTimeout(()=> errorEl.style.display='none', 4000); }
+
+    function metersPerDegreeLat(){ return 111320; }
+    function metersPerDegreeLng(lat){ return 111320 * Math.cos(lat * Math.PI/180); }
+
+    function pointInPolygon(latlng, polygonLatLngs) {
+      if (!polygonLatLngs || polygonLatLngs.length < 3) return true;
+      let x = latlng.lng, y = latlng.lat;
+      let inside = false;
+      for (let i = 0, j = polygonLatLngs.length - 1; i < polygonLatLngs.length; j = i++) {
+        const xi = polygonLatLngs[i].lng, yi = polygonLatLngs[i].lat;
+        const xj = polygonLatLngs[j].lng, yj = polygonLatLngs[j].lat;
+        const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / ((yj - yi) || 1e-12) + xi);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+
+    function randomNearbyPoint(lat, lng, maxMeters, polygonLatLngs){
+      const u = Math.random();
+      const r = Math.sqrt(u) * maxMeters;
+      const t = Math.random() * Math.PI * 2;
+      const dx = r * Math.cos(t);
+      const dy = r * Math.sin(t);
+      const dLat = dy / metersPerDegreeLat();
+      const dLng = dx / metersPerDegreeLng(lat);
+      const cand = L.latLng(lat + dLat, lng + dLng);
+      if (pointInPolygon(cand, polygonLatLngs)) return cand;
+      for (let i=0;i<20;i++){
+        const u2 = Math.random(), r2 = Math.sqrt(u2) * maxMeters, t2 = Math.random()*Math.PI*2;
+        const dx2 = r2 * Math.cos(t2), dy2 = r2 * Math.sin(t2);
+        const c2 = L.latLng(lat + (dy2 / metersPerDegreeLat()), lng + (dx2 / metersPerDegreeLng(lat)));
+        if (pointInPolygon(c2, polygonLatLngs)) return c2;
+      }
+      return cand;
+    }
+
+    function makeBadgeIcon(text, bg, border){
+      return L.divIcon({
+        className:'badge-icon',
+        html:`<div style="background:${bg};color:#fff;border:2px solid ${border};min-width:28px;height:28px;line-height:24px;border-radius:50%;text-align:center;font-weight:800;padding:0 6px;">${text}</div>`,
+        iconSize:[28,28], iconAnchor:[14,28], popupAnchor:[0,-28]
+      });
+    }
+
+    function randomPickupTime(){ const m = Math.floor(Math.random()*60); return '07:' + String(m).padStart(2,'0'); }
+
+    // Carrega PUDO (espera {code,name,lat,lng}); se faltar 'code', cria e persiste
+    function alphaFromSeq(seq){ let i=seq+1, s=''; while(i>0){ const r=(i-1)%26; s=String.fromCharCode(65+r)+s; i=Math.floor((i-1)/26);} return s; }
+    function nextAlphaCode(used){ const set=new Set(used||[]); for(let k=0;k<10000;k++){ const c=alphaFromSeq(k); if(!set.has(c)) return c; } return 'X'; }
+
+    let pudo = [];
+    try{
+      const saved = localStorage.getItem(PUDO_KEY);
+      if (saved) {
+        const arr = JSON.parse(saved);
+        let changed=false; const used=[];
+        arr.forEach(o=>{ if(!o.code){ o.code=nextAlphaCode(used); changed=true; } used.push(o.code); });
+        if (changed) localStorage.setItem(PUDO_KEY, JSON.stringify(arr));
+        pudo = arr;
+      }
+    }catch(e){ console.warn('Sem PUDO', e); }
+
+    // Persistência de settings
+    const tripsEl = document.getElementById('tripsPerHour');
+    const vehEl   = document.getElementById('numVehicles');
+    const walkEl  = document.getElementById('maxWalk');
+
+    try{
+      const s = JSON.parse(localStorage.getItem(DEMAND_SETTINGS_KEY) || '{}');
+      if (s.tripsPerHour) tripsEl.value = s.tripsPerHour;
+      if (s.numVehicles)  vehEl.value   = s.numVehicles;
+      if (s.maxWalkM)     walkEl.value  = s.maxWalkM;
+    }catch(e){}
+
+    function saveSettings(){
+      let t = Math.max(1, Math.min(15, parseInt(tripsEl.value || '1', 10)));
+      let v = Math.max(1, parseInt(vehEl.value || '1', 10));
+      let w = Math.max(50, parseInt(walkEl.value || '50', 10));
+      tripsEl.value = t; vehEl.value = v; walkEl.value = w;
+      localStorage.setItem(DEMAND_SETTINGS_KEY, JSON.stringify({ tripsPerHour:t, numVehicles:v, maxWalkM:w }));
+      return { t, v, w };
+    }
+    [tripsEl, vehEl, walkEl].forEach(el => el.addEventListener('change', saveSettings));
+
+    // Geração de viagens
+    const tripsListEl = document.getElementById('tripsList');
+    let trips = []; // {id,pickupTime,origin:{},pickup:{code,name,lat,lng},dropoff:{...},destination:{}}
+
+    function pickTwoDistinctPoints(arr){
+      const n = arr.length; if (n < 2) return null;
+      const a = Math.floor(Math.random()*n);
+      let b = Math.floor(Math.random()*n);
+      if (b === a) b = (a + 1 + Math.floor(Math.random()*(n-1))) % n;
+      return [arr[a], arr[b]];
+    }
+
+    function generateTrips(){
+      const { t, v, w } = saveSettings();
+      if (!pudo || pudo.length < 2){ showError('São necessários pelo menos 2 pontos PUDO. Volte e crie mais pontos.'); return; }
+
+      trips = [];
+      for (let i=0;i<t;i++){
+        const pair = pickTwoDistinctPoints(pudo);
+        if (!pair) break;
+        const [pu, do_] = pair;
+        const origin = randomNearbyPoint(pu.lat, pu.lng, w, areaCoords);
+        const destination = randomNearbyPoint(do_.lat, do_.lng, w, areaCoords);
+        trips.push({ id:'trip_'+(i+1), pickupTime:randomPickupTime(), origin, pickup:pu, dropoff:do_, destination });
+      }
+      localStorage.setItem(GENERATED_TRIPS_KEY, JSON.stringify(trips));
+      renderTripsList();
+      if (trips.length) selectTrip(0);
+    }
+
+    function renderTripsList(){
+      tripsListEl.innerHTML = '';
+      if (!trips.length){
+        const p = document.createElement('p');
+        p.textContent = 'Nenhuma viagem gerada ainda.';
+        tripsListEl.appendChild(p);
+        return;
+      }
+      trips.forEach((tr, i)=>{
+        const btn = document.createElement('button');
+        btn.className = 'trip-item';
+        const puC = tr.pickup?.code || '?';
+        const doC = tr.dropoff?.code || '?';
+        btn.textContent = `trip ${i+1} — ${tr.pickupTime || '07:00'} — ${puC}→${doC}`;
+        btn.addEventListener('click', ()=> selectTrip(i));
+        tripsListEl.appendChild(btn);
+      });
+    }
+
+    // Mapa
+    let mapLayerGroup = L.layerGroup().addTo(map);
+    function selectTrip(index){
+      const tr = trips[index]; if (!tr) return;
+      mapLayerGroup.clearLayers();
+
+      const iconO  = makeBadgeIcon('O',  'var(--green)', 'rgba(0,0,0,0.35)');
+      const iconPU = makeBadgeIcon(tr.pickup?.code || 'PU', 'var(--blue)',  'var(--blue-dark)');
+      const iconDO = makeBadgeIcon(tr.dropoff?.code || 'DO','var(--blue)',  'var(--blue-dark)');
+      const iconD  = makeBadgeIcon('D',  'var(--red)',   'rgba(0,0,0,0.35)');
+
+      L.marker(tr.origin, { icon: iconO }).addTo(mapLayerGroup).bindTooltip('Origem', {permanent:false});
+      L.marker([tr.pickup.lat, tr.pickup.lng], { icon: iconPU }).addTo(mapLayerGroup)
+        .bindTooltip('['+(tr.pickup?.code||'?')+'] Pick-up ('+(tr.pickupTime||'07:00')+'): '+(tr.pickup?.name||''), {permanent:false});
+      L.marker([tr.dropoff.lat, tr.dropoff.lng], { icon: iconDO }).addTo(mapLayerGroup)
+        .bindTooltip('['+(tr.dropoff?.code||'?')+'] Drop-off: '+(tr.dropoff?.name||''), {permanent:false});
+      L.marker(tr.destination, { icon: iconD }).addTo(mapLayerGroup).bindTooltip('Destino', {permanent:false});
+
+      L.polyline([[tr.pickup.lat, tr.pickup.lng],[tr.dropoff.lat, tr.dropoff.lng]], { color:'#1e90ff', weight:4, opacity:0.95 }).addTo(mapLayerGroup);
+      L.polyline([tr.origin, [tr.pickup.lat, tr.pickup.lng]], { color:'#7a7a7a', weight:3, opacity:0.9, dashArray:'6,6' }).addTo(mapLayerGroup);
+      L.polyline([[tr.dropoff.lat, tr.dropoff.lng], tr.destination], { color:'#7a7a7a', weight:3, opacity:0.9, dashArray:'6,6' }).addTo(mapLayerGroup);
+
+      const bounds = L.latLngBounds([tr.origin, [tr.pickup.lat,tr.pickup.lng], [tr.dropoff.lat,tr.dropoff.lng], tr.destination]).pad(0.25);
+      map.fitBounds(bounds);
+    }
+
+    document.getElementById('btnGenerate').addEventListener('click', generateTrips);
+
+    document.getElementById('btnNext').addEventListener('click', ()=>{
+      if (!trips.length){ generateTrips(); }
+      if (!trips.length){ showError('Não foi possível gerar viagens. Verifique os pontos PUDO e tente novamente.'); return; }
+      localStorage.setItem(GENERATED_TRIPS_KEY, JSON.stringify(trips));
+      window.location.href = 'ARTEMIS_Fixed_Free_3.html';
+    });
+
+    (function restore(){
+      try{
+        const arr = JSON.parse(localStorage.getItem(GENERATED_TRIPS_KEY) || '[]');
+        if (Array.isArray(arr) && arr.length){
+          trips = arr;
+          renderTripsList();
+          selectTrip(0);
+        } else {
+          renderTripsList();
+        }
+      }catch(e){ renderTripsList(); }
+    })();
+  </script>
+</body>
+</html>
