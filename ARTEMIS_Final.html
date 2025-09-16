@@ -2,681 +2,137 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ARTEMIS — Heurística com TW em PU e DO (BEST GLOBAL)</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APOLO - ARTEMIS Module</title>
   <style>
-    :root { --blue:#1e90ff; --green:#1fa87a; --red:#d84a4a; --amber:#d8a44a; }
-    body { background:#e5eff5; margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; display:flex; justify-content:center; }
-    .container { max-width:980px; width:100%; padding:16px; box-sizing:border-box; display:flex; flex-direction:column; gap:12px; }
-    .panel { background:#ffffffcc; border-radius:12px; padding:12px; }
-    h2 { margin:4px 0 8px; }
-    .grid { display:grid; grid-template-columns:1fr; gap:10px; }
-    .row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-    label { font-size:14px; font-weight:600; }
-    input { width:100%; padding:10px; border-radius:10px; border:1px solid #cfe3f7; background:#f7fbff; }
-    .buttons { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
-    .btn { background:#add8e6; border:1px solid #000; border-radius:20px; font-weight:700; padding:10px 18px; cursor:pointer; }
-    .btn:hover { background:#90c7e6; }
-    #map { width:100%; height:56vh; min-height:360px; border-radius:12px; overflow:hidden; }
-    .tbl { width:100%; border-collapse:collapse; }
-    .tbl th,tbl td { padding:8px; border-bottom:1px solid #e3eef9; text-align:left; font-size:14px; vertical-align:top; }
-    .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef6ff; border:1px solid #cfe3f7; font-size:12px; }
-    .legend { display:flex; gap:12px; align-items:center; font-size:13px; flex-wrap:wrap; }
-    .swatch { width:14px; height:14px; border-radius:4px; display:inline-block; border:1px solid #0003; }
-    .vehTitle { margin: 6px 0; font-weight: 700; }
-    .scheduleWrap { display:flex; flex-direction:column; gap:14px; }
-    .muted { opacity: .8; }
+    body {
+      background-color: #e5eff5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+    }
 
-    /* Modal Processing (mantido como no original) */
-    /*
-    .modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.35); z-index: 9999; }
-    .modal.show { display: flex; }
-    .modal-card { background: #fff; border-radius: 14px; padding: 16px 18px; box-shadow: 0 10px 30px rgba(0,0,0,.25); display: flex; align-items: center; gap: 12px; min-width: 220px; }
-    .spinner { width: 28px; height: 28px; border: 3px solid #cfe3f7; border-top-color: var(--blue); border-radius: 50%; animation: spin .8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .Processing...xt { font-weight: 700; letter-spacing: .3px; }
-    */
+    .container {
+      max-width: 900px;
+      width: 100%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .flow-image {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 30px;
+    }
+
+    .purposes {
+      text-align: justify;
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      background-color: #ffffffaa;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .selection {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    select {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      background-color: #f9f9f9;
+      width: 100%;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .next-button,
+    .back-button {
+      background-color: #add8e6;
+      border: 1px solid #000;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    .next-button:hover,
+    .back-button:hover {
+      background-color: #90c7e6;
+    }
+
+    @media (max-width: 768px) {
+      .purposes {
+        font-size: 14px;
+        padding: 15px;
+      }
+
+      select {
+        font-size: 14px;
+        padding: 8px;
+      }
+
+      .buttons {
+        flex-direction: column;
+      }
+
+      .next-button,
+      .back-button {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
+
   <div class="container">
+    <!-- Fluxogram as Image -->
+    <img src="ARTEMIS.png" alt="Start Flow" class="flow-image">
 
-    <div class="panel">
-      <h2>ARTEMIS — Heuristic (TW at PU and DO) — Best Global</h2>
-      <div class="grid">
-        <div class="row">
-          <div>
-            <label>Average speed (km/h)</label>
-            <input id="inSpeed" type="number" min="5" step="1" value="25" />
-          </div>
-          <div>
-            <label>Time window (min)</label>
-            <input id="inTW" type="number" min="0" step="1" value="10" />
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <label>Cost per km</label>
-            <input id="inCostKm" type="number" min="0" step="0.1" value="7" />
-          </div>
-          <div>
-            <label>Fixed cost per vehicle</label>
-            <input id="inCostFix" type="number" min="0" step="1" value="15" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div>
-            <label>Emission (kg CO₂/km)</label>
-            <input id="inCO2" type="number" min="0" step="0.001" value="0.21" />
-          </div>
-          <div>
-            <label>Processing time (ms)</label>
-            <input id="inProc" type="number" min="50" step="50" value="3000" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div>
-            <label>Stop criteria (iterations without improvement)</label>
-            <input id="inStop" type="number" min="10" step="10" value="300" />
-          </div>
-          <div></div>
-        </div>
-      </div>
-      <div class="buttons" style="margin-top:8px">
-        <button class="btn" id="btnRun">Run heuristic</button>
-        <button class="btn" id="btnReset">Reset</button>
-        <button class="btn" id="btnBack">Back</button>
-        <button class="btn" id="btnNext">NEXT</button>
-      </div>
+    <!-- Purposes Text -->
+    <div class="purposes">
+      <h2>ARTEMIS Module</h2>
+        <p>
+            [...]
+        </p>
+        The KPI preset, in a sense, provides a comprehensive picture of how these configurations performed in the scenario presented, allowing for a clearer understanding of their strengths, weaknesses, and overall suitability for the intended operational and strategic goals.
+        <p>
+            [...]
+        </p>
+        <p>
+            [...]
+        </p>
     </div>
 
-    <div class="panel">
-      <div class="legend" id="legend"></div>
-      <div id="map"></div>
-    </div>
-
-    <div class="panel">
-      <h2>Result</h2>
-      <table class="tbl" id="tbl"></table>
-      <div style="margin-top:8px">
-        <span class="pill" id="kpi"></span>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h2>Trip details</h2>
-      <table class="tbl" id="tripDetailTbl"></table>
-    </div>
-
-    <div class="panel">
-      <h2>Schedules per vehicle</h2>
-      <div id="schedWrap" class="scheduleWrap"></div>
-    </div>
-
-  </div>
-
-  <!-- Modal Processing -->
-  <div id="Processing...al" class="modal" role="dialog" aria-modal="true" aria-live="assertive" aria-label="Processing">
-    <div class="modal-card">
-      <div class="spinner" aria-hidden="true"></div>
-      <div class="Processing...xt"></div>
+    <!-- Buttons -->
+    <div class="buttons">
+      <button class="next-button" onclick="window.location.href='ARTEMIS_0.html'">Re-start ARTEMIS module</button>
+      <button class="next-button" onclick="window.location.href='MUSE_0.html'">BACK to MUSE module</button>
+      <button class="next-button" onclick="window.location.href='DELOS_0.html'">START DELOS module</button>
     </div>
   </div>
 
-<script>
-  // === LocalStorage keys
-  const PUDO_KEY = 'pudo_points';
-  const DEMAND_SETTINGS_KEY = 'demand_settings';
-  const GENERATED_TRIPS_KEY = 'generated_trips';
-  const SOLUTION_KEY = 'heuristic_solution';
-  const KPI_TRANSFER_KEY = 'kpi_transfer_v1';
-  const CO2_PER_KM_KEY = 'co2_per_km';
-
-  // === Load data
-  let pudo = [];
-  try { const s = localStorage.getItem(PUDO_KEY); if (s) pudo = JSON.parse(s); } catch(e){}
-  // ensure codes
-  if (pudo) {
-    let used = new Set((pudo||[]).map(p=>p.code).filter(Boolean));
-    function alphaFromSeq(seq){ let i=seq+1,s=''; while(i>0){const r=(i-1)%26; s=String.fromCharCode(65+r)+s; i=Math.floor((i-1)/26);} return s; }
-    function nextAlpha(){ for(let k=0;k<10000;k++){ const c=alphaFromSeq(k); if(!used.has(c)) return c; } return 'X'; }
-    pudo.forEach(p=>{ if(!p.code){ p.code = nextAlpha(); used.add(p.code); }});
-    localStorage.setItem(PUDO_KEY, JSON.stringify(pudo));
-  }
-
-  let trips = [];
-  try { const s = localStorage.getItem(GENERATED_TRIPS_KEY); if (s) trips = JSON.parse(s); } catch(e){}
-
-  let settings = { numVehicles: 3 };
-  try { const s = JSON.parse(localStorage.getItem(DEMAND_SETTINGS_KEY) || '{}'); if (s.numVehicles) settings.numVehicles = s.numVehicles; } catch(e){}
-
-  // === Helpers
-  function toTimeStr(m){ const h = Math.floor(m/60)%24; const mm = Math.round(m%60); return String(h).padStart(2,'0')+':'+String(mm).padStart(2,'0'); }
-  function toMinHHMM(hhmm){ const [h='0',m='0'] = String(hhmm||'').split(':'); return (+h*60)+(+m); }
-  function haversine(a,b){ const R=6371, t=d=>d*Math.PI/180; const dLat=t(b.lat-a.lat), dLng=t(b.lng-a.lng); const s=Math.sin(dLat/2)**2+Math.cos(t(a.lat))*Math.cos(t(b.lat))*Math.sin(dLng/2)**2; return 2*Math.atan2(Math.sqrt(s),Math.sqrt(1-s))*R; }
-  function ttMin(km, speedKmh){ return (km / Math.max(1, speedKmh)) * 60; }
-
-  function tripPUTimeMin(tr){ return toMinHHMM(tr.pickupTime || '07:00'); }
-  function tripKey(tr, idx){ return tr.id ? String(tr.id) : 't'+idx; }
-
-  // ====== OSM Routing (OSRM) — adição mínima ======
-  const USE_OSM_ROUTES = true;
-  const _routeCache = new Map();
-  function _routeKey(a,b){ return `${a.lat.toFixed(5)},${a.lng.toFixed(5)}|${b.lat.toFixed(5)},${b.lng.toFixed(5)}`; }
-
-  async function osrmRoute(a, b){
-    const key = _routeKey(a,b);
-    if (_routeCache.has(key)) return _routeCache.get(key);
-    const url = `https://router.project-osrm.org/route/v1/driving/${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometries=geojson`;
-    try{
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`OSRM HTTP ${res.status}`);
-      const data = await res.json();
-      if (!data.routes || !data.routes[0]) throw new Error('No route');
-      const r = data.routes[0];
-      const km = (r.distance || 0) / 1000;
-      const durMin = (r.duration || 0) / 60;
-      const coords = (r.geometry && r.geometry.coordinates)
-        ? r.geometry.coordinates.map(([lng,lat]) => [lat,lng])
-        : [];
-      const out = { km, durMin, coords };
-      _routeCache.set(key, out);
-      return out;
-    } catch(e){
-      const km = haversine(a,b);
-      const speed = parseFloat(document.getElementById('inSpeed').value||'25');
-      const durMin = ttMin(km, speed);
-      const out = { km, durMin, coords: [] };
-      _routeCache.set(key, out);
-      return out;
-    }
-  }
-
-  async function routeMetrics(a,b){
-    if (!USE_OSM_ROUTES) {
-      const km = haversine(a,b);
-      const speed = parseFloat(document.getElementById('inSpeed').value||'25');
-      return { km, durMin: ttMin(km, speed), coords: [] };
-    }
-    return await osrmRoute(a,b);
-  }
-  // ====== fim OSRM ======
-
-  // === Core
-  function emptySolution(V){
-    return { vehicles: new Array(V).fill(0).map(()=>({ trips: [], stopOrder: [], schedule: [], km:0 })), unserved: [], cost:0 };
-  }
-  function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
-
-  function buildInitialStopOrder(trips){
-    const order = [];
-    trips.forEach((tr,i)=>{
-      const uid = tripKey(tr,i);
-      order.push({ role:'PU', code:tr.pickup.code, name:tr.pickup.name, lat:tr.pickup.lat, lng:tr.pickup.lng, desired: tripPUTimeMin(tr), tripUid:uid });
-      order.push({ role:'DO', code:tr.dropoff.code, name:tr.dropoff.name, lat:tr.dropoff.lat, lng:tr.dropoff.lng, desired: tripPUTimeMin(tr), puLat:tr.pickup.lat, puLng:tr.pickup.lng, doLat:tr.dropoff.lat, doLng:tr.dropoff.lng, tripUid:uid });
-    });
-    return order;
-  }
-
-  // ==== (AJUSTADO p/ assíncrono e rotas reais) ====
-  async function scheduleTrips(list, speed, tw){
-    const stops = [];
-    let t = 7*60; // start 07:00
-    let km = 0;
-
-    for (let i=0;i<list.length;i++){
-      const tr = list[i];
-      const tripUid = tripKey(tr,i);
-
-      if (i>0){
-        const prev = list[i-1];
-        const hop = await routeMetrics(
-          {lat:prev.dropoff.lat,lng:prev.dropoff.lng},
-          {lat:tr.pickup.lat, lng:tr.pickup.lng}
-        );
-        km += hop.km; t += hop.durMin;
-      }
-
-      const desired = tripPUTimeMin(tr);
-      const earliestPU = desired - tw, latestPU = desired + tw;
-      if (t < earliestPU) t = earliestPU;
-      if (t > latestPU) return { feasible:false };
-
-      stops.push({ role:'PU', code:tr.pickup.code, name:tr.pickup.name, lat:tr.pickup.lat, lng:tr.pickup.lng, tMin:t, tStr:toTimeStr(t), tripUid });
-
-      const leg = await routeMetrics(
-        {lat:tr.pickup.lat,lng:tr.pickup.lng},
-        {lat:tr.dropoff.lat,lng:tr.dropoff.lng}
-      );
-      km += leg.km; t += leg.durMin;
-
-      const earliestDO = desired + leg.durMin;
-      const okMin = earliestDO - tw, okMax = earliestDO + tw;
-      if (t < okMin || t > okMax) return { feasible:false };
-
-      stops.push({ role:'DO', code:tr.dropoff.code, name:tr.dropoff.name, lat:tr.dropoff.lat, lng:tr.dropoff.lng, tMin:t, tStr:toTimeStr(t), tripUid });
-    }
-    return { feasible:true, stops, km };
-  }
-
-  async function tryInsert(veh, trip, pos, speed, tw){
-    const newTrips = veh.trips.slice();
-    newTrips.splice(pos, 0, trip);
-    const sched = await scheduleTrips(newTrips, speed, tw);
-    if (!sched.feasible) return false;
-    veh.trips = newTrips;
-    return true;
-  }
-
-  async function scheduleByOrder(order, speed, tw){
-    if (!order || !order.length) return { feasible:true, stops:[], km:0 };
-    let t = 7*60, km = 0, prev = null;
-    const stops = [];
-
-    for (let i=0;i<order.length;i++){
-      const e = order[i];
-      if (prev){
-        const hop = await routeMetrics(
-          {lat:prev.lat,lng:prev.lng},
-          {lat:e.lat,lng:e.lng}
-        );
-        km += hop.km; t += hop.durMin;
-      }
-
-      if (e.role === 'PU'){
-        const earliestPU = e.desired - tw, latestPU = e.desired + tw;
-        if (t < earliestPU) t = earliestPU;
-        if (t > latestPU) return { feasible:false };
-      } else {
-        const direct = await routeMetrics(
-          {lat:e.puLat,lng:e.puLng},
-          {lat:e.doLat,lng:e.doLng}
-        );
-        const earliestDO = e.desired + direct.durMin;
-        const okMin = earliestDO - tw, okMax = earliestDO + tw;
-        if (t < okMin || t > okMax) return { feasible:false };
-      }
-
-      stops.push({ role:e.role, code:e.code, name:e.name, lat:e.lat, lng:e.lng, tMin:t, tStr:toTimeStr(t), tripUid:e.tripUid });
-      prev = e;
-    }
-    return { feasible:true, stops, km };
-  }
-
-  function verifyOrder(order){
-    const puPos = new Map(), doPos = new Map();
-    for (let i=0;i<order.length;i++){ const e=order[i]; if (e.role==='PU') puPos.set(e.tripUid,i); else doPos.set(e.tripUid,i); }
-    for (const [uid,p] of puPos){ const d = doPos.get(uid); if (d==null || p>=d) return false; }
-    return true;
-  }
-
-  async function calcVehKm(sol, speed){
-    const tw = parseFloat(document.getElementById('inTW').value||'10');
-    for (const v of sol.vehicles){
-      if (!v.stopOrder || !v.stopOrder.length) v.stopOrder = buildInitialStopOrder(v.trips||[]);
-      const sched = await scheduleByOrder(v.stopOrder, speed, tw);
-      if (sched.feasible){ v.schedule = sched.stops; v.km = sched.km; } else { v.schedule=[]; v.km=0; }
-    }
-  }
-
-  function totalCost(sol, costKm, costFix){
-    const used = sol.vehicles.filter(v => (v.trips && v.trips.length > 0));
-    const km = used.reduce((s, v) => s + (v.km || 0), 0);
-    let baseCost = km * costKm + used.length * costFix;
-    const unservedPenalty = (sol.unserved ? sol.unserved.length : 0) * costKm * costFix * 1000;
-    return baseCost + unservedPenalty;
-  }
-
-  async function improve(sol, speed, tw, costKm, costFix, stopIter){
-    let best = deepClone(sol);
-    await calcVehKm(best, speed); best.cost = totalCost(best, costKm, costFix);
-
-    for (let it=0; it<stopIter; it++){
-      const candidates = best.vehicles.map((v,idx)=>({v,idx})).filter(x=> (x.v.stopOrder||[]).length>=2);
-      if (!candidates.length) break;
-      const pick = candidates[Math.floor(Math.random()*candidates.length)];
-      const vIdx = pick.idx; const order = pick.v.stopOrder.slice();
-
-      const i = Math.floor(Math.random()*order.length);
-      const e = order[i];
-      const j = (e.role==='PU') ? (i-1) : (i+1);
-      if (j<0 || j>=order.length) continue;
-
-      const newOrder = order.slice(); const tmp = newOrder[i]; newOrder[i]=newOrder[j]; newOrder[j]=tmp;
-      if (!verifyOrder(newOrder)) continue;
-
-      const sched = await scheduleByOrder(newOrder, speed, tw);
-      if (!sched.feasible) continue;
-
-      const cand = deepClone(best);
-      cand.vehicles[vIdx].stopOrder = newOrder;
-      cand.vehicles[vIdx].schedule  = sched.stops;
-      cand.vehicles[vIdx].km        = sched.km;
-      cand.cost = totalCost(cand, costKm, costFix);
-
-      if (cand.cost < best.cost){ best = cand; }
-    }
-    return best;
-  }
-
-  // === Map & UI
-  const map = L.map('map', { zoomControl:true }).setView([41.16, -8.60], 13);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-  setTimeout(()=>map.invalidateSize(), 200);
-
-  const colors = ['#1e90ff','#1fa87a','#d84a4a','#d8a44a','#8a5cf6','#00bcd4','#ff69b4','#6d4c41'];
-  function colorFor(i){ return colors[i % colors.length]; }
-
-  let layers = [];
-  function clearLayers(){ layers.forEach(l=>map.removeLayer(l)); layers=[]; }
-
-  async function renderSolution(sol, speed, execTimeSec){
-    clearLayers();
-
-    // legend
-    const legend = document.getElementById('legend');
-    legend.innerHTML='';
-    sol.vehicles.forEach((v,i)=>{
-      const sw = `<span class="swatch" style="background:${colorFor(i)}"></span>`;
-      const used = (v.trips||[]).length>0 ? `(${(v.trips||[]).length} trips)` : '(empty)';
-      legend.insertAdjacentHTML('beforeend', `${sw} Vehicle ${i+1} ${used}`);
-    });
-
-    // map pins + linhas reais (PU/DO consecutivos no schedule)
-    const bounds = [];
-    for (let i=0;i<sol.vehicles.length;i++){
-      const v = sol.vehicles[i];
-      if (!(v.trips||[]).length) continue;
-
-      (v.trips||[]).forEach(tr=>{
-        const m1 = L.circleMarker([tr.pickup.lat, tr.pickup.lng], { radius:6, color:colorFor(i), weight:3, fill:true, fillOpacity:0.9 }).addTo(map);
-        const m2 = L.circleMarker([tr.dropoff.lat, tr.dropoff.lng], { radius:6, color:colorFor(i), weight:3, fill:true, fillOpacity:0.5 }).addTo(map);
-        m1.bindTooltip(`[${tr.pickup.code}] ${tr.pickup.name}`);
-        m2.bindTooltip(`[${tr.dropoff.code}] ${tr.dropoff.name}`);
-        layers.push(m1,m2);
-        bounds.push([tr.pickup.lat, tr.pickup.lng], [tr.dropoff.lat, tr.dropoff.lng]);
-      });
-
-      if (v.schedule && v.schedule.length>1){
-        for (let s=0; s<v.schedule.length-1; s++){
-          const A = v.schedule[s], B = v.schedule[s+1];
-          const r = await routeMetrics({lat:A.lat,lng:A.lng},{lat:B.lat,lng:B.lng});
-          const line = L.polyline(r.coords.length ? r.coords : [[A.lat,A.lng],[B.lat,B.lng]], {
-            color: colorFor(i), weight: 4, opacity: 0.95
-          }).addTo(map);
-          layers.push(line);
-        }
-      }
-    }
-    if (bounds.length) map.fitBounds(L.latLngBounds(bounds).pad(0.2));
-
-    // per-vehicle table
-    const tbl = document.getElementById('tbl');
-    tbl.innerHTML = '';
-    tbl.insertAdjacentHTML('beforeend', `<tr><th>Vehicle</th><th>Trips</th><th>Km</th></tr>`);
-    sol.vehicles.forEach((v,i)=>{ tbl.insertAdjacentHTML('beforeend', `<tr><td>${i+1}</td><td>${(v.trips||[]).length}</td><td>${(v.km||0).toFixed(2)}</td></tr>`); });
-
-    const kpi = document.getElementById('kpi');
-    const kmTot = sol.vehicles.reduce((s,v)=>s+(v.km||0),0).toFixed(2);
-    kpi.textContent = `Vehicles used: ${sol.vehicles.filter(v=>(v.trips||[]).length>0).length} • Total km: ${kmTot} • Unserved trips: ${sol.unserved.length} • Execution time: ${execTimeSec||'-'}s`;
-
-    renderTripDetail(sol, speed);
-    renderSchedules(sol);
-  }
-
-  function renderTripDetail(sol, speed){
-    const tbl = document.getElementById('tripDetailTbl');
-    tbl.innerHTML = '';
-    tbl.insertAdjacentHTML('beforeend', `<tr><th>Trip</th><th>Origin</th><th>Destination</th><th>Pick-up location</th><th>Drop-off location</th><th>Desired departure</th><th>Earliest arrival</th><th>Actual PU</th><th>Actual DO</th></tr>`);
-    const rows = [];
-    sol.vehicles.forEach((v, vi)=>{
-      const schedule = v.schedule||[];
-      (v.trips||[]).forEach((tr,i)=>{
-        const uid = tripKey(tr,i);
-        const puStop = schedule.find(s=>s.tripUid===uid && s.role==='PU');
-        const doStop = schedule.find(s=>s.tripUid===uid && s.role==='DO');
-        if (!puStop || !doStop) return;
-        const desiredMin = tripPUTimeMin(tr);
-        // mantido o cálculo de earliest por velocidade média (sem OSRM aqui)
-        const directMin  = ttMin(haversine({lat:tr.pickup.lat,lng:tr.pickup.lng},{lat:tr.dropoff.lat,lng:tr.dropoff.lng}), speed);
-        const earliestMin= desiredMin + directMin;
-        const originStr = `${Number(tr.origin.lat).toFixed(5)}, ${Number(tr.origin.lng).toFixed(5)}`;
-        const destStr   = `${Number(tr.destination.lat).toFixed(5)}, ${Number(tr.destination.lng).toFixed(5)}`;
-        const puStr = `[${tr.pickup.code}] ${tr.pickup.name} (${Number(tr.pickup.lat).toFixed(5)}, ${Number(tr.pickup.lng).toFixed(5)})`;
-        const doStr = `[${tr.dropoff.code}] ${tr.dropoff.name} (${Number(tr.dropoff.lat).toFixed(5)}, ${Number(tr.dropoff.lng).toFixed(5)})`;
-        rows.push(`<tr>
-          <td>V${vi+1} · ${tr.id || (i+1)}</td>
-          <td>${originStr}</td>
-          <td>${destStr}</td>
-          <td>${puStr}</td>
-          <td>${doStr}</td>
-          <td>${toTimeStr(desiredMin)}</td>
-          <td>${toTimeStr(earliestMin)}</td>
-          <td>${puStop.tStr}</td>
-          <td>${doStop.tStr}</td>
-        </tr>`);
-      });
-    });
-    if (!rows.length){ tbl.insertAdjacentHTML('beforeend', '<tr><td colspan="9">No trips scheduled.</td></tr>'); }
-    else { tbl.insertAdjacentHTML('beforeend', rows.join('')); }
-  }
-
-  function renderSchedules(sol){
-    const wrap = document.getElementById('schedWrap');
-    wrap.innerHTML = '';
-    sol.vehicles.forEach((v,i)=>{
-      const sch = v.schedule||[];
-      const title = `<div class="vehTitle">Vehicle ${i+1} — ${(v.trips||[]).length} trips — ${(v.km||0).toFixed(2)} km</div>`;
-      const tblHead = `<table class="tbl"><tr><th>#</th><th>Role</th><th>Stop</th><th>Time</th></tr>`;
-      let rows = '';
-      sch.forEach((s,idx)=>{
-        rows += `<tr><td>${idx+1}</td><td>${s.role}</td><td>[${s.code}] ${s.name}</td><td>${s.tStr}</td></tr>`;
-      });
-      const tbl = `${tblHead}${rows || '<tr><td colspan="4">empty</td></tr>'}</table>`;
-      wrap.insertAdjacentHTML('beforeend', title + tbl);
-    });
-  }
-
-  // === Heuristic (usar TODOS os veículos e manter a melhor global) — AJUSTADO para async
-  async function runHeuristic(){
-    const speed   = parseFloat(document.getElementById('inSpeed').value||'25');
-    const twMin   = parseFloat(document.getElementById('inTW').value||'10');
-    const costKm  = parseFloat(document.getElementById('inCostKm').value||'1');
-    const costFix = parseFloat(document.getElementById('inCostFix').value||'0');
-    const procMs  = parseInt(document.getElementById('inProc').value||'1500',10);
-    const stopIter= parseInt(document.getElementById('inStop').value||'300',10);
-
-    localStorage.setItem('heuristic_speed_kmh', String(speed));
-    localStorage.setItem(CO2_PER_KM_KEY, String(parseFloat(document.getElementById('inCO2').value||'0.21')));
-
-    const V = Math.max(1, settings.numVehicles || 1);
-
-    let sol = await construct(V, speed, twMin, costKm, costFix);
-    await calcVehKm(sol, speed);
-    sol.cost = totalCost(sol, costKm, costFix);
-    let bestSol = deepClone(sol);
-
-    const tEnd = Date.now() + procMs;
-    while(Date.now() < tEnd){
-      const newSol = await improve(sol, speed, twMin, costKm, costFix, stopIter);
-      if (newSol.cost < bestSol.cost) {
-        bestSol = deepClone(newSol);
-      }
-      sol = newSol;
-    }
-
-    localStorage.setItem(SOLUTION_KEY, JSON.stringify(bestSol));
-    const execTimeSec = (procMs/1000).toFixed(2);
-    await renderSolution(bestSol, speed, execTimeSec);
-  }
-
-  async function construct(V, speed, tw, costKm, costFix){
-    const sol = emptySolution(V);
-    const idx = [...trips.keys()];
-    for (let i=idx.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [idx[i],idx[j]]=[idx[j],idx[i]]; }
-
-    for (const id of idx){
-      const tr = trips[id];
-      let placed = false;
-      const vehOrder = [...sol.vehicles.keys()];
-      for (let i=vehOrder.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [vehOrder[i],vehOrder[j]]=[vehOrder[j],vehOrder[i]]; }
-
-      for (const vIdx of vehOrder){
-        const veh = sol.vehicles[vIdx];
-        if (await tryInsert(veh, tr, 0, speed, tw)) { placed=true; break; }
-        if (await tryInsert(veh, tr, veh.trips.length, speed, tw)) { placed=true; break; }
-        for (let pos=1; pos<veh.trips.length; pos++){
-          if (await tryInsert(veh, tr, pos, speed, tw)) { placed=true; break; }
-        }
-        if (placed) break;
-      }
-      if (!placed) sol.unserved.push(tr);
-    }
-
-    for (const v of sol.vehicles){
-      v.stopOrder = buildInitialStopOrder(v.trips);
-      const sched = await scheduleByOrder(v.stopOrder, speed, tw);
-      if (sched.feasible){ v.schedule = sched.stops; v.km = sched.km; } else { v.schedule=[]; v.km=0; }
-    }
-    sol.cost = totalCost(sol, costKm, costFix);
-    return sol;
-  }
-
-  function resetAll(){
-    localStorage.removeItem(SOLUTION_KEY);
-    renderSolution(emptySolution(settings.numVehicles), parseFloat(document.getElementById('inSpeed').value||'25'));
-  }
-
-  function distanceBetweenStopsInSchedule(schedule, puIndex, doIndex){
-    if (!schedule || puIndex==null || doIndex==null || puIndex<0 || doIndex<=puIndex) return 0;
-    let km = 0;
-    for (let i=puIndex; i<doIndex; i++){
-      const a = schedule[i], b = schedule[i+1];
-      km += haversine({lat:a.lat,lng:a.lng},{lat:b.lat,lng:b.lng});
-    }
-    return km;
-  }
-
-  // versão assíncrona usando rotas reais hop-a-hop
-  async function distanceBetweenStopsInScheduleAsync(schedule, puIndex, doIndex){
-    if (!schedule || puIndex==null || doIndex==null || puIndex<0 || doIndex<=puIndex) return 0;
-    let km = 0;
-    for (let i=puIndex; i<doIndex; i++){
-      const a = schedule[i], b = schedule[i+1];
-      const hop = await routeMetrics({lat:a.lat,lng:a.lng},{lat:b.lat,lng:b.lng});
-      km += hop.km;
-    }
-    return km;
-  }
-
-  // Botões
-  document.getElementById('btnRun').addEventListener('click', async ()=>{
-    try { await runHeuristic(); } catch(e){ console.error(e); alert('Error running heuristic'); }
-  });
-
-  document.getElementById('btnReset').addEventListener('click', resetAll);
-  document.getElementById('btnBack').addEventListener('click', ()=> history.back());
-
-  // NEXT — prepara pacote de KPIs com métricas reais PU→DO
-  document.getElementById('btnNext').addEventListener('click', async ()=>{
-    try {
-      const speed   = parseFloat(document.getElementById('inSpeed').value||'25');
-      const twMin   = parseFloat(document.getElementById('inTW').value||'10');
-      const costKm  = parseFloat(document.getElementById('inCostKm').value||'1');
-      const costFix = parseFloat(document.getElementById('inCostFix').value||'0');
-      const procMs  = parseInt(document.getElementById('inProc').value||'1500',10);
-      const stopIter= parseInt(document.getElementById('inStop').value||'300',10);
-      const co2km   = parseFloat(document.getElementById('inCO2').value||localStorage.getItem(CO2_PER_KM_KEY)||'0.21');
-
-      localStorage.setItem(CO2_PER_KM_KEY, String(co2km));
-
-      let sol = null;
-      try { const s = localStorage.getItem(SOLUTION_KEY); if (s) sol = JSON.parse(s); } catch(e){}
-      if (!sol) sol = emptySolution(Math.max(1, settings.numVehicles||1));
-
-      await calcVehKm(sol, speed);
-
-      const vehiclesUsed = sol.vehicles.filter(v => (v.trips||[]).length>0).length;
-      const vkt = sol.vehicles.reduce((s,v)=>s+(v.km||0),0);
-      const unservedCount = (sol.unserved||[]).length;
-      const servedCount = sol.vehicles.reduce((s,v)=>s+(v.trips?v.trips.length:0),0);
-
-      const perTrip = [];
-      for (let vi=0; vi<sol.vehicles.length; vi++){
-        const v = sol.vehicles[vi];
-        const schedule = v.schedule||[];
-        const idxByUid = {};
-        schedule.forEach((s, i)=>{
-          if (!idxByUid[s.tripUid]) idxByUid[s.tripUid] = {};
-          idxByUid[s.tripUid][s.role] = i;
-        });
-        for (let i=0; i<(v.trips||[]).length; i++){
-          const tr = v.trips[i];
-          const uid = tripKey(tr,i);
-          const puIdx = idxByUid[uid] ? idxByUid[uid]['PU'] : null;
-          const doIdx = idxByUid[uid] ? idxByUid[uid]['DO'] : null;
-          const puStop = (puIdx!=null) ? schedule[puIdx] : null;
-          const doStop = (doIdx!=null) ? schedule[doIdx] : null;
-
-          const desiredMin = tripPUTimeMin(tr);
-          const directLeg  = await routeMetrics(
-            {lat:tr.pickup.lat,lng:tr.pickup.lng},
-            {lat:tr.dropoff.lat,lng:tr.dropoff.lng}
-          );
-          const earliestMin = desiredMin + directLeg.durMin;
-          const realSliceKm = (puIdx!=null && doIdx!=null)
-            ? await distanceBetweenStopsInScheduleAsync(schedule, puIdx, doIdx)
-            : 0;
-
-          perTrip.push({
-            vehicleIndex: vi,
-            tripIndex: i,
-            tripUid: uid,
-            desiredDepartureMin: desiredMin,
-            earliestArrivalMin: earliestMin,
-            estPuMin: puStop ? puStop.tMin : null,
-            estDoMin: doStop ? doStop.tMin : null,
-            directKm: directLeg.km,
-            realKmBetweenPuDo: realSliceKm
-          });
-        }
-      }
-
-      const payload = {
-        params: { speedKmh:speed, twMin, costKm, costFix, co2PerKm: co2km, procMs, stopIter, numVehiclesSetting: settings.numVehicles||null },
-        summary: { vehiclesUsed, vkt, unservedCount, servedCount },
-        solution: sol,
-        perTrip
-      };
-
-      localStorage.setItem(KPI_TRANSFER_KEY, JSON.stringify(payload));
-      window.location.href = 'ARTEMIS_Free_Free_3.html';
-    } catch(err){
-      console.error('NEXT error:', err);
-      alert('Could not prepare data for the next step. See console for details.');
-    }
-  });
-
-  // autorender if solution exists
-  (function restore(){
-    try{
-      const savedSpd = localStorage.getItem('heuristic_speed_kmh');
-      const v = parseFloat(savedSpd);
-      if (isFinite(v)) document.getElementById('inSpeed').value = v;
-    }catch(e){}
-    try{
-      const co2 = parseFloat(localStorage.getItem(CO2_PER_KM_KEY)||'');
-      if (isFinite(co2)) document.getElementById('inCO2').value = co2;
-    }catch(e){}
-    try{
-      const saved = localStorage.getItem(SOLUTION_KEY);
-      if (saved){ const sol = JSON.parse(saved); renderSolution(sol, parseFloat(document.getElementById('inSpeed').value||'25')); }
-    }catch(e){}
-  })();
-</script>
 </body>
 </html>
