@@ -86,7 +86,7 @@
 <body>
 
   <div class="top-image">
-    <img src="Start.png" alt="Start">
+    <img src="End.png" alt="Start">
   </div>
     
   <div class="content">
@@ -95,7 +95,7 @@
     
   <!-- Directive Variables -->
   <div class="content">
-    <h2>Directive Variables</h2>
+    <h2>Guiding Variables</h2>
     <div class="selection" id="selection-Purpose_1"></div>
     <div class="selection" id="selection-Purpose_2"></div>
     <div class="selection" id="selection-Target_passenger"></div>
@@ -147,7 +147,7 @@
   <div class="button-column">
     <button class="action-button green-button" onclick="gerarPDF()">PDF Report</button>
     <button class="action-button" onclick="window.location.href='DELOS_7.html'">BACK</button>
-    <button class="action-button" onclick="window.location.href='01_Decision_Variables.html'">BACK to Directive Variables</button>
+    <button class="action-button" onclick="window.location.href='01_Decision_Variables.html'">BACK to Guiding Variables</button>
     <button class="action-button" onclick="window.location.href='MUSE_0.html'">BACK to Operational Variables</button>
     <button class="action-button" onclick="window.location.href='DELOS_0.html'">BACK to Service Variables</button>
   </div>
@@ -408,7 +408,7 @@
     doc.setFontSize(12);
 
     // 1. Directive Variables
-    secaoTitulo("1. Directive Variables");
+    secaoTitulo("1. Guiding Variables");
     addLinha("Purpose 1", (window.Purpose_1Map && window.Purpose_1Map[Purpose_1]) || "Undefined");
     addLinha("Purpose 2", (window.Purpose_2Map && window.Purpose_2Map[Purpose_2]) || "Undefined");
     addLinha("Target Passengers", (window.Target_passengerMap && window.Target_passengerMap[Target_passenger]) || "Undefined");
