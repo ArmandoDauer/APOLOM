@@ -160,11 +160,11 @@
 
 <script>
   function classify(value) {
-    if (value >= 2.5) return "Majority Pro";
+    if (value >= 2.5) return "Mostly Pro";
     if (value >= 0.5) return "Somewhat Pro";
     if (value > -0.5) return "Neutral";
     if (value >= -2) return "Somewhat Con";
-    return "Majority Con";
+    return "Mostly Con";
   }
 
 window.onload = () => {
