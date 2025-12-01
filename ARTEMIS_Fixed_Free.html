@@ -134,9 +134,8 @@
     <div class="purposes">
       <h2>Pick-up & Drop-off Points</h2>
       <p>
-        Selecione <strong>pontos dentro da Service Area</strong> clicando no mapa. Os pontos serão utilizados como locais de <em>pick-up</em> e <em>drop-off</em> para passageiros.
-        Você pode arrastar os marcadores para refinar a posição. Para apagar um ponto, use o botão 
-        <span class="pill">Remover</span> na lista. No <strong>Next</strong>, os pontos serão salvos para uso futuro.
+        Select <strong> the Pick-up & Drop-off Points inside the Service Area</strong> clicking on the map. The points will be used as locations of <em>pick-up</em> and <em>drop-off</em> for the passengers.
+        You can drag the markers to refine the position. To delete a point, use the button <span class="pill">Remove</span> from the list. When pressing the <span class="pill">Next</span> buttons, the points are saved.
       </p>
     </div>
 
@@ -145,11 +144,11 @@
 
     <!-- Painel de pontos -->
     <div class="panel">
-      <p class="hint"><strong>Lista de pontos</strong> — Edite o nome (opcional). Clique em um nome para focar o mapa naquele ponto.</p>
+      <p class="hint"><strong>List of points</strong> — Change Name (optional). Click on a name to focus the map on that point.</p>
       <div id="error" class="error" style="display:none;"></div>
       <table class="points-table" id="pointsTable">
         <thead>
-          <tr><th>#</th><th>Nome</th><th>Latitude</th><th>Longitude</th><th>Ações</th></tr>
+          <tr><th>#</th><th>Name</th><th>Latitude</th><th>Longitude</th><th>Options</th></tr>
         </thead>
         <tbody id="pointsBody"></tbody>
       </table>
@@ -272,8 +271,8 @@
           <td class="lat">${latlng.lat.toFixed(6)}</td>
           <td class="lng">${latlng.lng.toFixed(6)}</td>
           <td>
-            <button onclick="focusPoint('${p.id}')">Focar</button>
-            <button onclick="deletePoint('${p.id}')">Remover</button>
+            <button onclick="focusPoint('${p.id}')">Show</button>
+            <button onclick="deletePoint('${p.id}')">Delete</button>
           </td>`;
         // Atualiza o nome no marker ao editar
         const input = tr.querySelector('input');

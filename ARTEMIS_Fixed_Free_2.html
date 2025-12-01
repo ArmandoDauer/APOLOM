@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>APOLO — Gerar Demanda</title>
+  <title>APOLO - Generate Demand</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
@@ -45,22 +45,22 @@
     <img src="Directive_Variables.png" alt="Directive Variables Flow" class="flow-image" />
 
     <div class="panel">
-      <h2>Gerar Demanda</h2>
+      <h2>Generate Demand</h2>
       <p style="margin-top:0">
-        Defina os parâmetros e clique em <strong>Generate Demand</strong>.
-        As viagens usam os PUDO salvos (mesmos <strong>códigos alfabéticos</strong> em lista e mapa).
-        Cada viagem recebe um horário de <em>pick-up</em> aleatório entre <strong>07:00 e 08:00</strong> (minutos).
+      Define the parameters and click <strong>Generate Demand</strong>.
+      Trips use the saved PUDOs (same <strong>alphabetical codes</strong> in list and map).
+      Each trip receives a random <em>pick-up</em> time between <strong>07:00 and 08:00</strong> (minutes).
       </p>
       <div class="form-row">
-        <label for="tripsPerHour">Viagens por hora (máx. 15)</label>
+        <label for="tripsPerHour">Trips per hour (max. 15)</label>
         <input id="tripsPerHour" type="number" min="1" max="15" step="1" value="6" />
       </div>
       <div class="form-row">
-        <label for="numVehicles">Quantidade de veículos</label>
+        <label for="numVehicles">Fleet</label>
         <input id="numVehicles" type="number" min="1" step="1" value="3" />
       </div>
       <div class="form-row">
-        <label for="maxWalk">Distância máxima de caminhada até a parada (m)</label>
+        <label for="maxWalk">Maximum walking distance to the stop (m)</label>
         <input id="maxWalk" type="number" min="50" step="10" value="400" />
       </div>
       <div class="buttons">
@@ -72,18 +72,18 @@
     </div>
 
     <div class="panel">
-      <h2>Viagens</h2>
+      <h2>Trips</h2>
       <div id="tripsList"></div>
     </div>
 
     <div class="panel">
       <div id="map"></div>
       <div class="legend">
-        <div class="lg"><span class="dot green"></span> Origem (O)</div>
-        <div class="lg"><span class="dot blue"></span> Paragens (letras)</div>
-        <div class="lg"><span class="dot red"></span> Destino (D)</div>
-        <div class="lg"><span class="line"></span> Linha entre paragens</div>
-        <div class="lg"><span class="line walk"></span> Caminhada (O→PU, DO→D)</div>
+        <div class="lg"><span class="dot green"></span> Origin (O)</div>
+        <div class="lg"><span class="dot blue"></span> Stops (PU, DU)</div>
+        <div class="lg"><span class="dot red"></span> Destiny (D)</div>
+        <div class="lg"><span class="line"></span> Distance between stops</div>
+        <div class="lg"><span class="line walk"></span> Walking Distance (O→PU, DO→D)</div>
       </div>
     </div>
   </div>
