@@ -28,7 +28,7 @@
 <body>
   <div class="container">
     <div class="panel">
-      <h1>ARTEMIS — KPIs Consolidados</h1>
+      <h1>ARTEMIS — KPIs</h1>
       <div class="buttons">
         <button class="btn" id="btnBack">BACK</button>
         <button class="btn" id="btnRecalc">Recalculate</button>
@@ -60,13 +60,11 @@
       <h3 style="margin-top:14px">Comfort — por viagem (serviced)</h3>
       <table class="tbl" id="tblComfortTrips"></table>
       <div class="muted" style="margin-top:6px">
-        Definições: TD = DO_est − PU_est; WAT = max(0, PU_est − Desired); TTT = TD + WAT (se WAT &gt; 0, senão TD);
-        ETT = TD − (Earliest − Desired); ETD = real_km(PU→DO) − direct_km(PU→DO).
       </div>
     </div>
 
     <div class="panel">
-      <h2>Reliability</h2>
+      <h2>Passenger’s perception of usefulness KPIs - Reliability<</h2>
       <table class="tbl" id="tblReliability"></table>
     </div>
 
@@ -74,8 +72,8 @@
       <h2>Efficiency</h2>
       <table class="tbl" id="tblEfficiency"></table>
       <div class="muted" style="margin-top:6px">
-        Observação: OC calculado sem penalização por viagens não atendidas (<em>apenas custos operacionais reais</em>).
-        PVKT é apresentado em duas formas para referência: <strong>Trips/VKT</strong> e <strong>VKT/Trip</strong>.
+        Note: CO calculated without penalty for unfulfilled trips. (<em>only actual operating costs</em>).
+        PVKT is presented in two forms for reference: <strong>Trips/VKT</strong> e <strong>VKT/Trip</strong>.
       </div>
     </div>
 
@@ -83,13 +81,13 @@
       <h2>Carbon Footprint</h2>
       <table class="tbl" id="tblCarbon"></table>
       <div class="muted" style="margin-top:6px">
-        AVO é calculado como <code>passenger-km ÷ vehicle-km</code>. CO₂p segue sua definição: <code>(VKT × CO₂/km) ÷ trips_served</code>.
-        CO₂pkm conforme solicitado: <code>CO₂p ÷ VKT</code>.
+        AVO calculated as <code>passenger-km ÷ vehicle-km</code>. CO₂p calculated as: <code>(VKT × CO₂/km) ÷ trips_served</code>.
+        CO₂pkm: <code>CO₂p ÷ VKT</code>.
       </div>
     </div>
 
     <div class="panel">
-      <h2>Dados indisponíveis nesta etapa</h2>
+      <h2>Not Available KPI</h2>
       <ul class="muted">
         <li>Accessibility: PWD, SPT, SAC</li>
         <li>Efficiency: PD (deadheads detalhado), RROC</li>
@@ -237,15 +235,14 @@
     const tblAgg = document.getElementById('tblComfortAgg');
     tblAgg.innerHTML = '';
     tblAgg.insertAdjacentHTML('beforeend', `<tr>
-      <th>Métrica</th><th>Média (min)</th><th>Total (min)</th><th>Obs.</th>
+      <th>KPI</th><th>Average (min)</th><th>Total (min)</th><th>Expl.</th>
     </tr>`);
     const rows = [
-      ['TD','Travel Duration', fmt2(avg(agg.TD)), fmt2(agg.TD),'—'],
-      ['WAT','Waiting/Anticipation', fmt2(avg(agg.WAT)), fmt2(agg.WAT),'max(0, PU − Desired)'],
-      ['TTT','Total Travel Time', fmt2(avg(agg.TTT)), fmt2(agg.TTT),'TD + WAT se WAT>0, senão TD'],
-      ['ETT','Excess Travel Time', fmt2(avg(agg.ETT)), fmt2(agg.ETT),'TD − (Earliest − Desired)'],
-      ['ETD','Excess Travel Distance (km)', fmt2(avg(agg.ETD)), fmt2(agg.ETD),'real_km − direct_km (PU→DO)'],
-      ['Passenger-km','Passenger-km (km)', fmt2(agg.passengerKm), fmt2(agg.passengerKm),'Somatório das distâncias reais PU→DO']
+      ['TD','Travel Duration', fmt2(avg(agg.TD)), fmt2(agg.TD),'The average time a passenger spends inside a vehicle travelling.'],
+      ['WAT','Waiting/Anticipation', fmt2(avg(agg.WAT)), fmt2(agg.WAT),'The time difference between the Desired departure time and <br>the Estimated pick-up time.'],
+      ['TTT','Total Travel Time', fmt2(avg(agg.TTT)), fmt2(agg.TTT),'The total time a passenger takes to go from Origin to <br>Destination, including the waiting time.'],
+      ['ETT','Excess Travel Time', fmt2(avg(agg.ETT)), fmt2(agg.ETT),'How much extra time a passenger will travel in the DRT if <br>compared to a direct car trip'],
+      ['ETD','Excess Travel Distance (km)', fmt2(avg(agg.ETD)), fmt2(agg.ETD),'How much a passenger will travel in excess (in distance)<br> in the DRT if compared to a direct car trip.'],
     ];
     rows.forEach(r=>{
       tblAgg.insertAdjacentHTML('beforeend', `<tr><td><strong>${r[0]}</strong></td><td>${r[2]}</td><td>${r[3]}</td><td class="muted">${r[4]}</td></tr>`);
@@ -281,13 +278,13 @@
   function renderReliability(res){
     const tbl = document.getElementById('tblReliability');
     tbl.innerHTML = '';
-    tbl.insertAdjacentHTML('beforeend', `<tr><th>KPI</th><th>Valor</th><th>Definição</th></tr>`);
+    tbl.insertAdjacentHTML('beforeend', `<tr><th>KPI</th><th>Value</th><th>Expl.</th></tr>`);
     const PDT = res.reliability.PDT;
     tbl.insertAdjacentHTML('beforeend',
       `<tr>
         <td><strong>PDT</strong></td>
         <td>${PDT!=null ? fmt2(PDT)+' %' : '-'}</td>
-        <td class="muted">Unserved ÷ Total requests × 100</td>
+        <td class="muted">The percentage of trip requests that could not be served by the system.</td>
       </tr>`
     );
   }
@@ -295,14 +292,13 @@
   function renderEfficiency(res){
     const tbl = document.getElementById('tblEfficiency');
     tbl.innerHTML = '';
-    tbl.insertAdjacentHTML('beforeend', `<tr><th>KPI</th><th>Valor</th><th>Unidade</th><th>Definição</th></tr>`);
+    tbl.insertAdjacentHTML('beforeend', `<tr><th>KPI</th><th>Value</th><th>Unity</th><th>Expl.</th></tr>`);
     const E = res.efficiency;
     const rows = [
-      ['VKT', res.summary.vkt, 'km', 'Vehicle-km travelled'],
-      ['OC',  E.OC, 'currency units', 'Operation Cost = VKT×cost/km + vehiclesUsed×fixed/veh'],
-      ['OCT', E.OCT, 'currency units / trip', 'OC ÷ trips served'],
-      ['PVKT (Trips/VKT)', E.PVKT_tripsPerKm, 'trips/km', 'Trips served ÷ VKT'],
-      ['PVKT (VKT/Trip)', E.PVKT_kmPerTrip, 'km/trip', 'VKT ÷ Trips served']
+      ['VKT', res.summary.vkt, 'km', 'Total distance travelled by the fleet.'],
+      ['OC',  E.OC, 'currency units', 'The total operational cost of the operations, accounting <br> both for fixed and variable costs.'],
+      ['OCT', E.OCT, 'currency units / trip', 'Represents the average cost of serving a trip request.'],
+      ['PVKT (Trips/VKT)', E.PVKT_tripsPerKm, 'trips/km', 'Average distance travelled by trip request.'],
     ];
     rows.forEach(r=>{
       tbl.insertAdjacentHTML('beforeend', `<tr><td><strong>${r[0]}</strong></td><td>${r[1]!=null?fmt2(r[1]):'-'}</td><td>${r[2]}</td><td class="muted">${r[3]}</td></tr>`);
@@ -312,13 +308,13 @@
   function renderCarbon(res){
     const tbl = document.getElementById('tblCarbon');
     tbl.innerHTML = '';
-    tbl.insertAdjacentHTML('beforeend', `<tr><th>KPI</th><th>Valor</th><th>Unidade</th><th>Definição</th></tr>`);
+    tbl.insertAdjacentHTML('beforeend', `<tr><th>KPI</th><th>Value</th><th>Unit</th><th>Expl.</th></tr>`);
     const C = res.carbon;
     const rows = [
       ['Total CO₂', C.totalCO2, 'kg', 'VKT × CO₂/km'],
-      ['CO₂ per passenger (CO2p)', C.CO2p, 'kg/passenger', '(VKT × CO₂/km) ÷ trips served'],
-      ['CO₂ per passenger per km (CO2pkm)', C.CO2pkm, 'kg/(passenger·km*)', 'CO2p ÷ VKT (conforme definição fornecida)'],
-      ['Average Vehicle Occupancy (AVO)', C.AVO, 'passengers', 'Passenger-km ÷ Vehicle-km']
+      ['CO₂ per passenger (CO2p)', C.CO2p, 'kg/passenger', 'kg/passenger', 'Amount of C02 produced per trip request served.'],
+      ['CO₂ per passenger per km (CO2pkm)', C.CO2pkm, 'kg/(passenger·km*)', 'The amount of CO2 produced per passenger per km.'],
+      ['Average Vehicle Occupancy (AVO)', C.AVO, 'passengers', 'The average occupation of vehicles during service.']
     ];
     rows.forEach(r=>{
       tbl.insertAdjacentHTML('beforeend', `<tr><td><strong>${r[0]}</strong></td><td>${r[1]!=null?fmt2(r[1]):'-'}</td><td>${r[2]}</td><td class="muted">${r[3]}</td></tr>`);
@@ -328,7 +324,7 @@
   function renderAll(){
     const res = calcAll();
     if (!res.ok){
-      alert((res.errors||[]).join('\n') || 'Erro ao carregar dados.');
+      alert((res.errors||[]).join('\n') || 'Error loading data.');
       return;
     }
     fillOverview(res);
